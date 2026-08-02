@@ -39,26 +39,5 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
 # Claude Code local settings (machine-specific, not shared)
 .claude/settings.local.json
-
-# scripts/ - Firebase Admin SDK service account keys must never be
-# committed. node_modules is reinstalled via `npm install`.
-scripts/node_modules/
-scripts/*-key.json
-scripts/serviceAccountKey.json
-scripts/*.serviceaccount.json
-
-# Release signing - the upload keystore and its passwords must never be
-# committed. Losing this file means losing the ability to publish updates
-# under the same Play Store listing, so it's backed up outside the repo,
-# not just gitignored.
-android/key.properties
-android/upload-keystore.jks
-android/*.jks
-android/*.keystore

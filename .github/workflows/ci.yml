@@ -6,6 +6,8 @@ on:
   pull_request:
 
 jobs:
+  # Unit/widget tests and the analyzer are platform-independent, so they run
+  # on a Linux runner - only the iOS compile below needs a Mac.
   analyze-and-test:
     runs-on: ubuntu-latest
     steps:
@@ -16,6 +18,19 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+
+  ios-build:
+    # Proves the Dart and plugin code actually compiles for iOS - the only
+    # platform this app targets. --no-codesign needs no signing identity or
+    # provisioning profile, just a Mac runner and no Apple account.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
 
   deck-is-generated:
     # The JSON assets are generated from scripts/build_n5_data.py - this

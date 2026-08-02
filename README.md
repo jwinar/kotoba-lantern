@@ -27,11 +27,13 @@ rebuilt for Japanese.</sub>
 
 ```bash
 flutter pub get
-flutter run
+flutter run          # with an iOS Simulator booted, or a device attached
 ```
 
-Requires the Flutter SDK (Dart `^3.12.2`). Android and iOS are the supported
-targets; there is no web or desktop configuration.
+**iOS only.** Requires the Flutter SDK (Dart `^3.12.2`) and Xcode; the repo
+carries no `android/`, web or desktop configuration, and adding one is a
+deliberate decision, not a missing file. Bundle identifier:
+`com.kotobalantern.kotobaLantern`.
 
 ## Tests
 
