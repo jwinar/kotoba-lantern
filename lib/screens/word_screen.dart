@@ -30,7 +30,7 @@ class WordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lantern = Theme.of(context).extension<LanternColors>()!;
-    final wordsAsync = ref.watch(n5WordsProvider);
+    final wordsAsync = ref.watch(wordsProvider);
     final shuffleMode = ref.watch(shuffleModeProvider);
 
     return Scaffold(
@@ -110,7 +110,7 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
     _recordedIndex = index;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(viewHistoryServiceProvider).recordView(index);
+      ref.read(viewHistoryServiceProvider).recordView(word.level, word.id);
       ref.read(wordProgressProvider.notifier).markSeen(word);
     });
   }
@@ -135,7 +135,7 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
     _recordView(index, word);
 
     final progressMap = ref.watch(wordProgressProvider).value ?? const <String, WordProgress>{};
-    final progress = progressMap[word.progressId] ?? WordProgress.empty;
+    final progress = progressMap[word.id] ?? WordProgress.empty;
     final progressNotifier = ref.read(wordProgressProvider.notifier);
 
     final shuffleMode = ref.watch(shuffleModeProvider);
@@ -143,8 +143,18 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
     final ttsService = ref.read(ttsServiceProvider);
 
     Future<void> shuffleNext() async {
-      final recentIndices = await ref.read(viewHistoryServiceProvider).recentIndices(limit: 30);
+      final recentIds = await ref
+          .read(viewHistoryServiceProvider)
+          .recentIds(word.level, limit: 30);
       if (!mounted) return;
+      // History stores ids; the weighting works in positions, so resolve
+      // against the deck actually loaded. Ids for words no longer in the
+      // deck drop out rather than shifting everything after them.
+      final positionOf = {for (var i = 0; i < words.length; i++) words[i].id: i};
+      final recentIndices = [
+        for (final id in recentIds)
+          if (positionOf[id] != null) positionOf[id]!,
+      ];
       ref.read(shuffleHistoryProvider.notifier).push(index);
       ref.read(currentWordIndexProvider.notifier).jumpToRandom(
         words: words,

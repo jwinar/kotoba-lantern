@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'screens/home_screen.dart';
+import 'services/level_providers.dart';
 import 'services/theme_mode_providers.dart';
 import 'services/theme_mode_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Read before runApp so the first frame is already in the right theme -
-  // otherwise a dark-mode user gets a flash of the light hero panel.
+  // Read before runApp so the first frame is already in the right theme and
+  // on the right deck - otherwise a dark-mode N2 learner gets a flash of a
+  // light N5 home screen.
   final savedThemeMode = await ThemeModeService().load();
+  final savedLevel = await LevelService().load();
 
   runApp(
     ProviderScope(
       overrides: [
         themeModeProvider.overrideWith(() => ThemeModeNotifier(savedThemeMode)),
+        levelProvider.overrideWith(() => LevelNotifier(savedLevel)),
       ],
       child: const KotobaLanternApp(),
     ),

@@ -8,7 +8,7 @@ final progressServiceProvider = Provider<ProgressService>((ref) {
   return ProgressService();
 });
 
-/// Every word's tracked state, keyed by [JapaneseWord.progressId].
+/// Every word's tracked state, keyed by [JapaneseWord.id].
 ///
 /// Loaded once from [ProgressService] and then patched in memory as flags
 /// are toggled, so the UI updates on the same frame as the tap while the
@@ -21,18 +21,18 @@ class WordProgressNotifier extends AsyncNotifier<Map<String, WordProgress>> {
   }
 
   Future<void> markSeen(JapaneseWord word) async {
-    if (state.value?[word.progressId]?.seen ?? false) return;
-    _patch(word.progressId, (progress) => progress.copyWith(seen: true));
+    if (state.value?[word.id]?.seen ?? false) return;
+    _patch(word.id, (progress) => progress.copyWith(seen: true));
     await ref.read(progressServiceProvider).markSeen(word);
   }
 
   Future<void> setLearned(JapaneseWord word, bool value) async {
-    _patch(word.progressId, (progress) => progress.copyWith(learned: value));
+    _patch(word.id, (progress) => progress.copyWith(learned: value));
     await ref.read(progressServiceProvider).setLearned(word, value);
   }
 
   Future<void> setFavorite(JapaneseWord word, bool value) async {
-    _patch(word.progressId, (progress) => progress.copyWith(favorite: value));
+    _patch(word.id, (progress) => progress.copyWith(favorite: value));
     await ref.read(progressServiceProvider).setFavorite(word, value);
   }
 

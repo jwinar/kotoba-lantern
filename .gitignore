@@ -41,3 +41,7 @@ app.*.map.json
 
 # Claude Code local settings (machine-specific, not shared)
 .claude/settings.local.json
+
+# Generator source cache - re-downloaded by scripts/build_jlpt_data.py.
+# The generated assets in assets/data/ are committed; these inputs are not.
+scripts/.cache/

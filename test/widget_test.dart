@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:kotoba_lantern/main.dart';
 import 'package:kotoba_lantern/screens/word_screen.dart';
+import 'package:kotoba_lantern/services/level_providers.dart';
 import 'package:kotoba_lantern/services/word_providers.dart';
 import 'package:kotoba_lantern/theme/app_theme.dart';
 
@@ -68,33 +69,35 @@ void main() {
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Kotoba Lantern'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
-    expect(find.text('OF 150'), findsOneWidget);
-    expect(find.text('0% lit — 150 words still dark'), findsOneWidget);
+    expect(find.text('OF 719'), findsOneWidget);
+    expect(find.text('0% lit — 719 words still dark'), findsOneWidget);
+    // Every level is offered, N5 first.
+    expect(find.text('N5'), findsOneWidget);
+    expect(find.text('N1'), findsOneWidget);
   });
 
   testWidgets('the study card shows the word, its reading and its example',
       (tester) async {
     await pumpWordScreen(tester);
 
-    expect(find.text('私'), findsWidgets); // headword + breathing echo
-    expect(find.text('わたし'), findsOneWidget);
-    expect(find.text('WATASHI'), findsOneWidget);
-    expect(find.text('I; me'), findsOneWidget);
-    expect(find.text('私は学生です。'), findsOneWidget);
+    // N5's first word by list order.
+    expect(find.text('ああ'), findsWidgets); // headword + breathing echo
+    expect(find.text('AA'), findsOneWidget);
+    expect(find.text('Ah!, Oh!'), findsOneWidget);
   });
 
   testWidgets('browses the deck via Prev/Next', (tester) async {
     await pumpWordScreen(tester);
 
-    expect(find.text('1 / 150'), findsOneWidget);
+    expect(find.text('1 / 719'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 150'), findsOneWidget);
+    expect(find.text('2 / 719'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Previous'));
     await tester.pumpAndSettle();
-    expect(find.text('1 / 150'), findsOneWidget);
+    expect(find.text('1 / 719'), findsOneWidget);
   });
 
   testWidgets('Previous is disabled at the first word', (tester) async {
@@ -103,15 +106,30 @@ void main() {
     expect(_iconButtonFor(tester, Icons.arrow_back_ios).onPressed, isNull);
   });
 
+  testWidgets('switching level swaps the deck and resets the position',
+      (tester) async {
+    await pumpApp(tester);
+    expect(find.text('OF 719'), findsOneWidget);
+
+    // Jump into the deck first, so the reset is observable.
+    container.read(currentWordIndexProvider.notifier).jumpTo(200, 719);
+    await tester.tap(find.text('N1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('OF 2655'), findsOneWidget);
+    expect(container.read(currentWordIndexProvider), 0);
+    expect(container.read(levelProvider), 1);
+  });
+
   testWidgets('Next is disabled at the last word', (tester) async {
-    final words = await container.read(n5WordsProvider.future);
+    final words = await container.read(wordsProvider.future);
     container
         .read(currentWordIndexProvider.notifier)
         .jumpTo(words.length - 1, words.length);
 
     await pumpWordScreen(tester);
 
-    expect(find.text('150 / 150'), findsOneWidget);
+    expect(find.text('719 / 719'), findsOneWidget);
     expect(_iconButtonFor(tester, Icons.arrow_forward_ios).onPressed, isNull);
   });
 }

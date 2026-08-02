@@ -40,11 +40,11 @@ void main() {
     await service.setFavorite(_other, true);
 
     final progress = await service.loadAll();
-    expect(progress[_word.progressId]!.seen, isTrue);
-    expect(progress[_word.progressId]!.learned, isTrue);
-    expect(progress[_word.progressId]!.favorite, isFalse);
-    expect(progress[_other.progressId]!.favorite, isTrue);
-    expect(progress[_other.progressId]!.seen, isFalse);
+    expect(progress[_word.id]!.seen, isTrue);
+    expect(progress[_word.id]!.learned, isTrue);
+    expect(progress[_word.id]!.favorite, isFalse);
+    expect(progress[_other.id]!.favorite, isTrue);
+    expect(progress[_other.id]!.seen, isFalse);
   });
 
   test('unsetting a flag leaves the others intact', () async {
@@ -55,8 +55,8 @@ void main() {
     await service.setLearned(_word, false);
 
     final progress = await service.loadAll();
-    expect(progress[_word.progressId]!.learned, isFalse);
-    expect(progress[_word.progressId]!.seen, isTrue);
+    expect(progress[_word.id]!.learned, isFalse);
+    expect(progress[_word.id]!.seen, isTrue);
   });
 
   test('clear removes every tracked flag', () async {

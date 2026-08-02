@@ -6,12 +6,26 @@ class AttributionsScreen extends StatelessWidget {
 
   static const _entries = <(String, String)>[
     (
-      'Vocabulary & example sentences',
-      'The bundled JLPT N5 deck is hand-curated for this app (see '
-          'scripts/build_n5_data.py). JLPT levels are published by the Japan '
-          'Foundation and JEES, which do not release an official vocabulary '
-          'list; this deck is our own selection of core N5 words and is not '
-          'endorsed by either body.',
+      'Vocabulary',
+      'The N5-N1 word lists are Jonathan Waller\'s JLPT vocabulary lists '
+          '(tanos.co.uk), licensed CC BY, by way of the open-anki-jlpt-decks '
+          'project (MIT).\n\n'
+          'The JLPT is run by the Japan Foundation and JEES, which have '
+          'published no official vocabulary list since 2010. These lists are '
+          'widely used reconstructions, not the exam\'s own word list, and '
+          'this app is not endorsed by either body.',
+    ),
+    (
+      'Kanji readings & stroke counts',
+      'Derived from KANJIDIC2, © the Electronic Dictionary Research and '
+          'Development Group, licensed CC BY-SA 4.0. The kanji data this app '
+          'ships is a derivative of KANJIDIC2 and is itself CC BY-SA 4.0.',
+    ),
+    (
+      'Example sentences',
+      'The 150 example sentences are written for this app by hand, one per '
+          'word for the core N5 vocabulary. Words without one simply show no '
+          'sentence rather than an automatically matched approximation.',
     ),
     (
       'Type',

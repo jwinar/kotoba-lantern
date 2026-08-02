@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/jlpt_repository.dart';
 import '../models/japanese_word.dart';
+import '../services/level_providers.dart';
 import '../services/view_history_providers.dart';
 import '../services/view_history_service.dart';
 import '../services/word_providers.dart';
@@ -38,13 +40,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<ViewHistorySnapshot> _loadSnapshot() async {
     final service = ref.read(viewHistoryServiceProvider);
-    final viewedCount = await service.viewedCount();
-    final recentIndices = await service.recentIndices();
+    final level = ref.read(levelProvider);
+    final viewedCount = await service.viewedCount(level);
+    final recentIds = await service.recentIds(level);
     final activeDateKeys = await service.activeDateKeys();
     final streak = await service.currentStreak();
     return ViewHistorySnapshot(
       viewedCount: viewedCount,
-      recentIndices: recentIndices,
+      recentIds: recentIds,
       activeDateKeys: activeDateKeys,
       streak: streak,
     );
@@ -60,7 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _openWordScreen({int? jumpToIndex}) async {
     if (jumpToIndex != null) {
-      final words = await ref.read(n5WordsProvider.future);
+      final words = await ref.read(wordsProvider.future);
       if (!mounted) return;
       ref.read(currentWordIndexProvider.notifier).jumpTo(jumpToIndex, words.length);
     }
@@ -78,6 +81,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _reloadHistory();
   }
 
+  Future<void> _selectLevel(int level) async {
+    await ref.read(levelProvider.notifier).setLevel(level);
+    _reloadHistory();
+  }
+
   /// "See all" under Recently viewed - unlike the Library button (the full
   /// deck in canonical order), this shows only the words in
   /// [recentIndices], in that same most-recent-first order. Passes
@@ -85,7 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// tapping a row opens the *actual* word tapped and Prev/Next from there
   /// pages the real deck rather than this short subset.
   Future<void> _openRecentlyViewed(List<JapaneseWord> words, List<int> recentIndices) async {
-    final validIndices = recentIndices.where((i) => i >= 0 && i < words.length).toList();
+    final validIndices = recentIndices.toList();
     final recentWords = [for (final i in validIndices) words[i]];
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -111,7 +119,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final lantern = Theme.of(context).extension<LanternColors>()!;
-    final wordsAsync = ref.watch(n5WordsProvider);
+    final wordsAsync = ref.watch(wordsProvider);
+    final level = ref.watch(levelProvider);
 
     return Scaffold(
       backgroundColor: lantern.pageBackground,
@@ -124,17 +133,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             future: _historyFuture,
             builder: (context, snapshot) {
               final history = snapshot.data ?? ViewHistorySnapshot.empty;
+              // History is keyed by word id; the list is keyed by position.
+              // Resolve once here so both the "recently viewed" rows and
+              // their tap targets agree, and so an id from a word that has
+              // since left the deck simply doesn't appear.
+              final positionOf = {
+                for (var i = 0; i < words.length; i++) words[i].id: i,
+              };
+              final recentIndices = [
+                for (final id in history.recentIds)
+                  if (positionOf[id] != null) positionOf[id]!,
+              ];
               return SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _HeroSection(
                       lantern: lantern,
+                      level: level,
                       viewedCount: history.viewedCount,
                       total: words.length,
                       onTapLantern: () => _openWordScreen(),
                       onOpenLibrary: () => _openWordList(words),
                       onSettingsTap: _openSettings,
+                      onSelectLevel: _selectLevel,
                     ),
                     _StreakSection(
                       lantern: lantern,
@@ -144,8 +166,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _RecentlyViewedSection(
                       lantern: lantern,
                       words: words,
-                      recentIndices: history.recentIndices,
-                      onSeeAll: () => _openRecentlyViewed(words, history.recentIndices),
+                      recentIndices: recentIndices,
+                      onSeeAll: () => _openRecentlyViewed(words, recentIndices),
                       onTapWord: (index) => _openWordScreen(jumpToIndex: index),
                     ),
                     const SizedBox(height: 32),
@@ -165,19 +187,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 /// it hangs in.
 class _HeroSection extends StatelessWidget {
   final LanternColors lantern;
+  final int level;
   final int viewedCount;
   final int total;
   final VoidCallback onTapLantern;
   final VoidCallback onOpenLibrary;
   final VoidCallback onSettingsTap;
+  final ValueChanged<int> onSelectLevel;
 
   const _HeroSection({
     required this.lantern,
+    required this.level,
     required this.viewedCount,
     required this.total,
     required this.onTapLantern,
     required this.onOpenLibrary,
     required this.onSettingsTap,
+    required this.onSelectLevel,
   });
 
   @override
@@ -233,7 +259,7 @@ class _HeroSection extends StatelessWidget {
                               style: displayFont(fontSize: 21, color: lantern.heroText),
                             ),
                             Text(
-                              '日本語 · JLPT N5',
+                              '日本語 · JLPT ${levelLabel(level)}',
                               style: jpFont(
                                 fontSize: 11.5,
                                 letterSpacing: 0.6,
@@ -263,7 +289,13 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
+                  _LevelSelector(
+                    lantern: lantern,
+                    selected: level,
+                    onSelect: onSelectLevel,
+                  ),
+                  const SizedBox(height: 12),
                   Center(
                     child: GestureDetector(
                       onTap: onTapLantern,
@@ -557,6 +589,74 @@ class _RecentlyViewedSection extends StatelessWidget {
             }),
         ],
       ),
+    );
+  }
+}
+
+/// The five JLPT levels as a row of small lanterns strung on a wire, N5
+/// through N1. The selected one is lit; the rest hang dark.
+///
+/// A row rather than a dropdown because the level is the single most
+/// consequential choice in the app - it decides which 700-2,700 words you
+/// are looking at - and because five is few enough to show all of them.
+class _LevelSelector extends StatelessWidget {
+  final LanternColors lantern;
+  final int selected;
+  final ValueChanged<int> onSelect;
+
+  const _LevelSelector({
+    required this.lantern,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = lantern.accentOnHero;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (final level in jlptLevels)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Semantics(
+              button: true,
+              selected: level == selected,
+              label: 'JLPT ${levelLabel(level)}',
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => onSelect(level),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: level == selected ? accent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: level == selected
+                          ? accent
+                          : lantern.heroText.withValues(alpha: 0.22),
+                    ),
+                    boxShadow: level == selected
+                        ? [BoxShadow(color: accent.withValues(alpha: 0.4), blurRadius: 14)]
+                        : null,
+                  ),
+                  child: Text(
+                    levelLabel(level),
+                    style: bodyFont(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: level == selected
+                          ? lantern.heroPanelBottom
+                          : lantern.heroText.withValues(alpha: 0.65),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

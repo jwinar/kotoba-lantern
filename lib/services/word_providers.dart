@@ -2,26 +2,39 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/n5_repository.dart';
+import '../data/jlpt_repository.dart';
 import '../models/japanese_word.dart';
 import '../models/word_progress.dart';
+import 'level_providers.dart';
 
-final n5RepositoryProvider = Provider<N5Repository>((ref) {
-  return N5Repository();
+final jlptRepositoryProvider = Provider<JlptRepository>((ref) {
+  return JlptRepository();
 });
 
+/// The deck for the level currently selected. Reloads when the level
+/// changes; Riverpod keeps the previous value on screen until the new one
+/// resolves, and a level file is small enough that the swap is a blink.
+///
 // retry: disabled. A local asset load either succeeds or genuinely fails -
 // retrying doesn't help, and Riverpod's default retry-with-backoff timer
 // outlives a single test's pumpAndSettle, tripping flutter_test's "no
 // pending timers after dispose" check on any transient first-attempt
 // failure.
-final n5WordsProvider = FutureProvider<List<JapaneseWord>>((ref) {
-  return ref.watch(n5RepositoryProvider).loadWords();
+final wordsProvider = FutureProvider<List<JapaneseWord>>((ref) {
+  final level = ref.watch(levelProvider);
+  return ref.watch(jlptRepositoryProvider).loadLevel(level);
 }, retry: (retryCount, error) => null);
 
 class CurrentWordIndexNotifier extends Notifier<int> {
   @override
-  int build() => 0;
+  int build() {
+    // Watching the level rebuilds this notifier - and so resets the index -
+    // whenever the deck changes. Without it, switching from N1 (2,655
+    // words) to N5 (719) would leave the index out past the end of the new
+    // deck until something clamped it.
+    ref.watch(levelProvider);
+    return 0;
+  }
 
   void next(int wordCount) {
     if (wordCount == 0) return;
@@ -69,13 +82,13 @@ final currentWordIndexProvider =
 /// flat/uniform shuffle. A word that is learned *and* favorited keeps full
 /// weight: favoriting is the "keep showing me this one" override.
 ///
-/// [recentIndices] is most-recent-first (ViewHistoryService.recentIndices'
-/// own order); an index's position there scales its weight down towards
-/// [_recentFloor] the closer to the front it is, and anything outside that
-/// window (or never viewed at all) gets full weight. [excludeIndex] (the
-/// word currently on screen) is heavily downweighted rather than
-/// physically excluded, so Next rarely - but can still, for a tiny word
-/// list - repeat the word just shown.
+/// [recentIndices] is most-recent-first (ViewHistoryService's own order);
+/// an index's position there scales its weight down towards [_recentFloor]
+/// the closer to the front it is, and anything outside that window (or
+/// never viewed at all) gets full weight. [excludeIndex] (the word
+/// currently on screen) is heavily downweighted rather than physically
+/// excluded, so Next rarely - but can still, for a tiny word list - repeat
+/// the word just shown.
 const double _learnedWeight = 0.2;
 const double _recentFloor = 0.1;
 const double _excludeWeight = 0.05;
@@ -96,7 +109,7 @@ int pickWeightedRandomIndex({
   };
 
   final weights = List<double>.generate(words.length, (i) {
-    final wordProgress = progress[words[i].progressId];
+    final wordProgress = progress[words[i].id];
     final demoted = (wordProgress?.learned ?? false) && !(wordProgress?.favorite ?? false);
     var weight = demoted ? _learnedWeight : 1.0;
 

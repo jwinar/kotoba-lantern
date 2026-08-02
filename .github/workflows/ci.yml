@@ -71,14 +71,17 @@ jobs:
           path: simulator.png
           if-no-files-found: ignore
 
-  deck-is-generated:
-    # The JSON assets are generated from scripts/build_n5_data.py - this
-    # fails if someone edits the JSON by hand and the two drift apart.
+  decks-are-valid:
+    # Checks the generated decks against the invariants the app relies on:
+    # every level present and full-size, ids unique, readings kana, orders
+    # sequential. Deliberately NOT a regenerate-and-diff: the decks come
+    # from upstream word lists, so a byte comparison would fail whenever
+    # someone else fixes a typo in a list - which says nothing about this
+    # repo, and would need network access in CI to find out.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - run: python3 scripts/build_n5_data.py
-      - run: git diff --exit-code assets/data
+      - run: python3 scripts/verify_assets.py

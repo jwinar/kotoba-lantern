@@ -12,20 +12,24 @@ final viewHistoryServiceProvider = Provider<ViewHistoryService>((ref) {
 /// history only changes while a different screen is on top.
 class ViewHistorySnapshot {
   final int viewedCount;
-  final List<int> recentIndices;
+
+  /// Most-recent-first word ids. The screen resolves them against the deck
+  /// it has loaded; an id that no longer exists (deck regenerated, word
+  /// dropped upstream) simply doesn't render.
+  final List<String> recentIds;
   final Set<String> activeDateKeys;
   final int streak;
 
   const ViewHistorySnapshot({
     required this.viewedCount,
-    required this.recentIndices,
+    required this.recentIds,
     required this.activeDateKeys,
     required this.streak,
   });
 
   static const empty = ViewHistorySnapshot(
     viewedCount: 0,
-    recentIndices: [],
+    recentIds: [],
     activeDateKeys: {},
     streak: 0,
   );

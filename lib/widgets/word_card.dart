@@ -151,12 +151,14 @@ class HeroContent extends StatelessWidget {
           textAlign: TextAlign.center,
           style: displayFont(fontSize: 24, color: lantern.ink).copyWith(height: 1.15),
         ),
-        const SizedBox(height: 5),
-        Text(
-          captionFor(word),
-          textAlign: TextAlign.center,
-          style: bodyFont(fontSize: 13, color: lantern.subText),
-        ),
+        if (captionFor(word).isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text(
+            captionFor(word),
+            textAlign: TextAlign.center,
+            style: bodyFont(fontSize: 13, color: lantern.subText),
+          ),
+        ],
         const SizedBox(height: 18),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -203,11 +205,16 @@ class HeroContent extends StatelessWidget {
 /// kana word has neither, so it keeps the plain word-class caption rather
 /// than describing one arbitrary character of itself.
 ///
+/// Every part is optional, and most of the deck has only the readings: word
+/// class is only present where a human wrote it (see
+/// [JapaneseWord.partOfSpeech]), so the line degrades to "音 シ · 訓 わたし ·
+/// 7 strokes" or disappears entirely rather than showing a guess.
+///
 /// One string, not tagged segments: Zen Kaku Gothic New covers Latin and
 /// Japanese in a single face, so "pronoun · 音 シ · 訓 わたし · 7 strokes"
 /// renders in one style with no fallback gap to design around.
 String captionFor(JapaneseWord word) {
-  final parts = <String>[word.partOfSpeech];
+  final parts = <String>[if (word.partOfSpeech != null) word.partOfSpeech!];
   if (word.onReading != null) parts.add('音 ${word.onReading}');
   if (word.kunReading != null) parts.add('訓 ${word.kunReading}');
   if (word.strokeCount != null) parts.add('${word.strokeCount} strokes');

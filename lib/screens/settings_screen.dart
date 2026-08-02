@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/progress_providers.dart';
 import '../services/theme_mode_providers.dart';
 import '../services/view_history_providers.dart';
+import '../services/level_providers.dart';
 import '../services/word_providers.dart';
 import 'attributions_screen.dart';
 import 'word_list_screen.dart';
@@ -49,7 +50,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final wordsAsync = ref.watch(n5WordsProvider);
+    final level = ref.watch(levelProvider);
+    final wordsAsync = ref.watch(wordsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -60,8 +62,8 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Word list'),
             subtitle: Text(
               wordsAsync.maybeWhen(
-                data: (words) => 'Browse all ${words.length} JLPT N5 words',
-                orElse: () => 'Browse the JLPT N5 deck',
+                data: (words) => 'Browse all ${words.length} JLPT ${levelLabel(level)} words',
+                orElse: () => 'Browse the JLPT ${levelLabel(level)} deck',
               ),
             ),
             trailing: const Icon(Icons.chevron_right),

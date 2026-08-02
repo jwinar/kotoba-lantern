@@ -1,4 +1,4 @@
-/// One entry in the study deck.
+/// One entry in a JLPT deck.
 ///
 /// [japanese] is the word as it is normally written (kanji where a word
 /// normally takes kanji, kana where it doesn't - あなた, たくさん and the
@@ -13,24 +13,26 @@ class JapaneseWord {
 
   /// Word class as it's useful to a learner - "godan verb", "ichidan
   /// verb", "i-adjective", "na-adjective", "noun", "counter",
-  /// "expression". Conjugation depends on this in a way it doesn't in the
-  /// Mandarin deck this design came from, so it earns its place on the
-  /// card's caption line rather than being a filing detail.
-  final String partOfSpeech;
+  /// "expression".
+  ///
+  /// Null for most of the deck: the imported word lists carry no word
+  /// class, and inferring one from an English gloss ("to …" → verb) would
+  /// be wrong often enough to teach the wrong thing. Only the hand-curated
+  /// N5 words have it, and the card omits the line when it's absent rather
+  /// than guessing.
+  final String? partOfSpeech;
 
-  /// 5 for JLPT N5, the only level in the deck today. Paired with [order]
-  /// (unique within a level) as the stable `{level}_{order}` key
-  /// [progressId] hands to the progress store, so adding N4 later doesn't
-  /// collide with progress already recorded against N5.
+  /// 5 (N5) through 1 (N1).
   final int level;
 
-  /// Position in the deck's canonical order (1-based).
+  /// Position in the level's canonical order (1-based). Display order
+  /// only - [id] is what progress is keyed by.
   final int order;
 
   /// An example sentence using this word: the sentence itself, its all-kana
-  /// reading, and an English translation. Every word in the bundled N5 deck
-  /// has one, but display should still treat them as optional - a future
-  /// level may not.
+  /// reading, and an English translation. Present for the 150 hand-written
+  /// N5 words and null for the rest of the deck, so display always treats
+  /// them as optional.
   final String? exampleSentence;
   final String? exampleSentenceKana;
   final String? exampleSentenceEnglish;
@@ -48,8 +50,8 @@ class JapaneseWord {
     required this.kana,
     required this.romaji,
     required this.english,
-    required this.partOfSpeech,
     required this.order,
+    this.partOfSpeech,
     this.level = 5,
     this.exampleSentence,
     this.exampleSentenceKana,
@@ -65,7 +67,7 @@ class JapaneseWord {
       kana: json['kana'] as String,
       romaji: json['romaji'] as String,
       english: json['english'] as String,
-      partOfSpeech: json['partOfSpeech'] as String,
+      partOfSpeech: json['partOfSpeech'] as String?,
       order: json['order'] as int,
       level: json['level'] as int? ?? 5,
       exampleSentence: json['exampleSentence'] as String?,
@@ -81,7 +83,14 @@ class JapaneseWord {
   /// the readings are meaningful.
   bool get isSingleKanji => strokeCount != null;
 
-  /// Stable key identifying this word in the progress store, across app
-  /// sessions and (later) levels.
-  String get progressId => '${level}_$order';
+  /// Stable identity for progress and view history: level plus the written
+  /// form, e.g. `5_私`.
+  ///
+  /// Deliberately not the list position. The deck is generated from
+  /// upstream word lists (see scripts/build_jlpt_data.py), so a
+  /// regeneration can insert, drop or reorder entries; anything keyed by
+  /// index would silently start pointing at a different word. A headword is
+  /// unique within its level - the generator enforces that - and means the
+  /// same thing across rebuilds.
+  String get id => '${level}_$japanese';
 }

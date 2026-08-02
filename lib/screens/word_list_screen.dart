@@ -26,14 +26,17 @@ import 'word_screen.dart';
 /// index-clamping isn't done against the subset's smaller size.
 class WordListScreen extends ConsumerWidget {
   final List<JapaneseWord> words;
-  final String title;
+
+  /// Defaults to the level of the words being shown, so the Library button
+  /// and "Recently viewed → See all" both say what deck you're looking at.
+  final String? title;
   final List<int>? globalIndices;
   final int? totalWordCount;
 
   const WordListScreen({
     super.key,
     required this.words,
-    this.title = 'JLPT N5 Word List',
+    this.title,
     this.globalIndices,
     this.totalWordCount,
   });
@@ -45,14 +48,21 @@ class WordListScreen extends ConsumerWidget {
     final progressNotifier = ref.read(wordProgressProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(
+          title ??
+              (words.isEmpty
+                  ? 'Word list'
+                  : 'JLPT N${words.first.level} · ${words.length} words'),
+        ),
+      ),
       body: ListView.separated(
         itemCount: words.length,
         separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final word = words[index];
           final globalIndex = globalIndices != null ? globalIndices![index] : index;
-          final progress = progressMap[word.progressId] ?? WordProgress.empty;
+          final progress = progressMap[word.id] ?? WordProgress.empty;
 
           return ListTile(
             leading: SizedBox(

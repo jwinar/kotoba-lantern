@@ -69,7 +69,7 @@ void main() {
         words,
         // The first five are learned, the rest are not.
         progress: {
-          for (final word in words.take(5)) word.progressId: const WordProgress(learned: true),
+          for (final word in words.take(5)) word.id: const WordProgress(learned: true),
         },
         recentIndices: const [],
       );
@@ -83,8 +83,8 @@ void main() {
       final counts = _tally(
         words,
         progress: {
-          words[0].progressId: const WordProgress(learned: true),
-          words[1].progressId: const WordProgress(learned: true, favorite: true),
+          words[0].id: const WordProgress(learned: true),
+          words[1].id: const WordProgress(learned: true, favorite: true),
         },
         recentIndices: const [],
       );

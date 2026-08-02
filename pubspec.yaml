@@ -24,6 +24,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/data/n5.json
-    - assets/data/n5_sentences.json
-    - assets/data/n5_kanji_info.json
+    - assets/data/jlpt_n5.json
+    - assets/data/jlpt_n4.json
+    - assets/data/jlpt_n3.json
+    - assets/data/jlpt_n2.json
+    - assets/data/jlpt_n1.json
+    - assets/data/sentences.json
+    - assets/data/kanji_info.json

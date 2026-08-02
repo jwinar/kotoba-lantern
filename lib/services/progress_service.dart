@@ -5,7 +5,7 @@ import '../models/word_progress.dart';
 
 /// On-device store for per-word seen/learned/favorite state.
 ///
-/// Three parallel `SharedPreferences` string lists of [JapaneseWord.progressId]
+/// Three parallel `SharedPreferences` string lists of [JapaneseWord.id]
 /// rather than one serialized map: each flag is set independently, membership
 /// is the whole payload, and a corrupted or half-written list degrades to
 /// "that flag is missing" instead of losing all progress at once. There is
@@ -33,13 +33,13 @@ class ProgressService {
     return progress;
   }
 
-  Future<void> markSeen(JapaneseWord word) => _setFlag(_keySeen, word.progressId, true);
+  Future<void> markSeen(JapaneseWord word) => _setFlag(_keySeen, word.id, true);
 
   Future<void> setLearned(JapaneseWord word, bool value) =>
-      _setFlag(_keyLearned, word.progressId, value);
+      _setFlag(_keyLearned, word.id, value);
 
   Future<void> setFavorite(JapaneseWord word, bool value) =>
-      _setFlag(_keyFavorite, word.progressId, value);
+      _setFlag(_keyFavorite, word.id, value);
 
   /// Clears every tracked flag. Offered from Settings; the caller is
   /// responsible for confirming with the user first.
