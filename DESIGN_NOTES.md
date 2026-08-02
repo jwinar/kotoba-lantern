@@ -1,28 +1,56 @@
 # Design notes — what came from the Mandarin app, what didn't
 
-Kotoba Lantern started as a copy of a Mandarin/HSK vocabulary app built on the
-same design language. Roughly **40% of that app is carried over here** — the
-visual system and the core study loop — and the rest was either dropped as
-out of scope or rebuilt because Japanese doesn't work like Mandarin.
+Kotoba Lantern started as a copy of a Mandarin/HSK vocabulary app and, for its
+first few commits, wore that app's clothes: warm paper, imperial gold, a dark
+ink slab, freehand wave bands, a filling ring. It read as the same product in a
+different language, so the visual identity was replaced wholesale.
 
-## Carried over intact
+What's carried over now is **structure, not appearance**: the screens, the
+study loop, and the logic underneath them.
 
-The design system itself, which is the part worth reusing:
+## Carried over
 
-- **Color tokens** (`DashboardColors`): warm paper background, dark "ink" hero
-  panel that stays dark in both themes, gold accent, hairline, sub-text — same
-  values, light and dark.
-- **Type roles**: Cormorant Garamond for display/numerals, Lora for body, a
-  CJK serif for the target language, a brush face for the seal and proverb.
-- **Dashboard home**: ink hero with a 学 watermark, ink-wash wave bands and
-  scallops, an animated progress ring, the 7-day streak row with 火 on active
-  days, and the "recently viewed" list under a wave line.
-- **Study card**: oversized headword with the slow "breathing echo" behind it,
-  gold side hairlines, the level rail in the top-right corner, the example
-  sentence box, the `‹ N / total ›` pager, the two-band ink wave floor.
-- **Smart Shuffle**: the weighted-random picker, weights and all.
-- **On-device view history**: the store behind the ring, the streak and the
-  recency weighting.
+- **The study loop** — deck → card → mark learned / favorite → Smart Shuffle,
+  including the weighted-random picker and its weights.
+- **Screen structure** — a home screen of progress / streak / recently viewed,
+  a single-word study card, a list, settings.
+- **On-device view history** — the store behind the progress element, the
+  streak and the recency weighting.
+- **The card's bones** — oversized headword with the slow "breathing echo"
+  behind it, a level rail in the top-right, an example-sentence box, a
+  `‹ N / total ›` pager.
+
+## The identity: Chōchin (提灯)
+
+Chosen from three drafted directions, over "Aizome" (indigo and vermilion,
+seigaiha pattern, an enso in place of the ring) and "Ma" (bone-white,
+typographic, a 150-cell plate in place of the ring). Chōchin takes the app's
+own name literally.
+
+- **A paper lantern replaces the progress ring** (`lib/widgets/lantern.dart`).
+  It fills with light from the bottom as the deck is opened. A ring's arc says
+  "percentage"; a lantern that's half dark says "there's more of this to
+  light", which is the same fact framed as an invitation — so the caption
+  counts the words *still dark* rather than the percentage done.
+- **Night ground, lantern light.** `#14100F` night, a plum-to-night hero
+  gradient, `#E4762E` lantern as the single accent. No gold anywhere, and no
+  second accent — everything that needs emphasis borrows the light. The light
+  theme darkens the accent to `#B85418` to clear 4.5:1 on paper.
+- **The lantern casts a glow** on both screens — dimmed by how lit it is on the
+  home panel, pooled behind the headword on the card.
+- **Streak lamps.** Seven lit/unlit lamps marked 灯, not 火 boxes.
+- **One gothic family, Zen Kaku Gothic New,** for Japanese and Latin alike,
+  replacing the Cormorant / Lora / Noto Serif / Yuji Syuku serif set. Dropping
+  the serif is what stops this reading as a museum label. It ships no italic,
+  so emphasis is weight, tracking and the accent — never a synthesized slant.
+  One family covering both scripts also means a caption mixing "pronoun" with
+  訓 わたし renders in a single style, which is why `captionFor` went back to
+  returning a plain string.
+- **The level rail reads N / 5**, the way the exam is written on a textbook
+  spine, replacing the JLPT · 五 stack.
+- **Gone with the old identity:** the 学 watermark, the ink-wash wave bands and
+  scallops, the wave floor, the ring painter, the brush proverb face, the gold
+  token.
 
 ## Rebuilt for Japanese
 
@@ -30,12 +58,11 @@ The design system itself, which is the part worth reusing:
   written form, a kana reading and, for beginners, romaji — so the card grew a
   three-line reading stack instead of one gold pinyin line.
 - **The caption line.** The Mandarin card showed *radical · strokes* for
-  single characters. Here it shows the word class (godan / ichidan verb,
-  i- / na-adjective, …) always — conjugation depends on it — plus stroke count
-  and 音/訓 readings when the headword is a single kanji.
+  single characters. Here it leads with the word class (godan / ichidan verb,
+  i- / na-adjective, …) — conjugation depends on it — plus stroke count and
+  音/訓 readings when the headword is a single kanji.
 - **Example sentences** gained a kana line, since a sentence in kanji is
   unreadable to an N5 learner without one.
-- **The level rail** reads JLPT · 五 rather than HSK · 一.
 - **TTS** speaks `ja-JP`, and speaks the written form rather than the kana, so
   the voice keeps its pitch and phrasing.
 - **The deck**: 150 hand-curated N5 words with sentences, generated by

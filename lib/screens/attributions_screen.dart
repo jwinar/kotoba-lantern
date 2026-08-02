@@ -14,10 +14,11 @@ class AttributionsScreen extends StatelessWidget {
           'endorsed by either body.',
     ),
     (
-      'Fonts',
-      'Noto Serif JP, Cormorant Garamond, Lora and Yuji Syuku, served via '
-          'the google_fonts package. All four are licensed under the SIL Open '
-          'Font License 1.1.',
+      'Type',
+      'Zen Kaku Gothic New, by Yoshimichi Ohira, served via the google_fonts '
+          'package and licensed under the SIL Open Font License 1.1. It carries '
+          'kanji, kana and Latin in one voice, which is why the app uses a '
+          'single family throughout.',
     ),
     (
       'Pronunciation',

@@ -40,6 +40,7 @@ class WordListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final lantern = Theme.of(context).extension<LanternColors>()!;
     final progressMap = ref.watch(wordProgressProvider).value ?? const <String, WordProgress>{};
     final progressNotifier = ref.read(wordProgressProvider.notifier);
 
@@ -65,7 +66,7 @@ class WordListScreen extends ConsumerWidget {
             ),
             title: Text(
               word.kana,
-              style: const TextStyle(color: kotobaGold, fontWeight: FontWeight.w500),
+              style: TextStyle(color: lantern.accent, fontWeight: FontWeight.w500),
             ),
             subtitle: Text(word.english, maxLines: 1, overflow: TextOverflow.ellipsis),
             trailing: Row(
@@ -75,7 +76,7 @@ class WordListScreen extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                   icon: Icon(
                     progress.learned ? Icons.check_circle : Icons.check_circle_outline,
-                    color: progress.learned ? kotobaGold : null,
+                    color: progress.learned ? lantern.accent : null,
                   ),
                   tooltip: progress.learned ? 'Marked as learned' : 'Mark as learned',
                   onPressed: () => progressNotifier.setLearned(word, !progress.learned),
@@ -84,7 +85,7 @@ class WordListScreen extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                   icon: Icon(
                     progress.favorite ? Icons.star : Icons.star_border,
-                    color: progress.favorite ? kotobaGold : null,
+                    color: progress.favorite ? lantern.accent : null,
                   ),
                   tooltip: progress.favorite ? 'Favorited' : 'Add to favorites',
                   onPressed: () => progressNotifier.setFavorite(word, !progress.favorite),

@@ -4,24 +4,28 @@ A quiet daily Japanese vocabulary deck: 150 core **JLPT N5** words, each with
 its kana reading, romaji, gloss, an example sentence, and on-device
 pronunciation. Flutter, offline, no account.
 
-<sub>Design descended from a Mandarin/HSK app of the same shape — see
-[DESIGN_NOTES.md](DESIGN_NOTES.md) for what was carried over and what was
-rebuilt for Japanese.</sub>
+<sub>Structure descended from a Mandarin/HSK app of the same shape; the visual
+identity ("Chōchin") is its own. See [DESIGN_NOTES.md](DESIGN_NOTES.md) for
+what was carried over and what was replaced.</sub>
 
 ## What's in it
 
-- **Dashboard home** — ink hero panel with a progress ring (words opened, out
-  of 150), a 7-day streak row, and recently viewed words.
-- **Study card** — oversized headword with a slow-breathing ghost echo behind
-  it, kana reading in gold, romaji, gloss, and a caption line that adds stroke
-  count and 音/訓 readings for single-kanji words.
+- **Home** — a night panel holding a paper lantern that fills with light as
+  the deck is opened, a 7-day row of streak lamps, and recently viewed words.
+  The caption counts what's *still dark*, not what's done.
+- **Study card** — oversized headword lit by the lantern's own glow, with a
+  slow-breathing ghost echo behind it, the kana reading in lantern light,
+  romaji, gloss, and a caption line that adds stroke count and 音/訓 readings
+  for single-kanji words.
 - **Example sentence** per word, with its all-kana reading and a translation,
   each speakable on its own.
 - **Smart Shuffle** — weighted-random "Next" that favors words you haven't
   learned and haven't just seen. Favoriting a word keeps it in rotation even
   after you mark it learned.
 - **Word list** — the whole deck, with learned/favorite/speak on each row.
-- Light and dark themes; progress, favorites and streaks stored on-device.
+- **Night and day themes.** Dark-first — the lantern needs a night to glow
+  against; the light theme is the same lantern seen by daylight, not an
+  inversion. Progress, favorites and streaks are stored on-device.
 
 ## Running it
 

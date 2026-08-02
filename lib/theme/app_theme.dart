@@ -1,139 +1,201 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Kotoba Lantern brand accent - gold, used for readings and highlights on
-/// the plain list screens.
-const Color kotobaGold = Color(0xFFD4A72C);
-
-/// Color tokens for the dashboard-style home screen and the study card.
-/// The hero panel is always a dark "ink" surface regardless of the app's
-/// light/dark mode, so it needs its own token set rather than reusing the
-/// Material [ColorScheme].
+/// Kotoba Lantern's "Chōchin" identity - a night ground, a paper lantern
+/// that fills with light as the deck is learned, and gothic type.
+///
+/// The palette is deliberately dark-first: this is an app people open in
+/// the evening, and the lantern metaphor only works against a night. The
+/// light theme is a *day* version of the same idea (paper lantern seen in
+/// daylight), not an inversion of these values - see [LanternColors.light].
 @immutable
-class DashboardColors extends ThemeExtension<DashboardColors> {
+class LanternColors extends ThemeExtension<LanternColors> {
+  /// The page ground.
   final Color pageBackground;
-  final Color heroPanel;
+
+  /// Top and bottom of the hero panel's vertical gradient. The panel stays
+  /// dark in both themes: the lantern needs a night to glow against.
+  final Color heroPanelTop;
+  final Color heroPanelBottom;
+
+  /// Body text on [pageBackground].
   final Color ink;
+
+  /// Secondary text.
   final Color subText;
-  final Color accentGold;
+
+  /// Lantern light - the app's single accent. There is no second accent
+  /// and no gold anywhere; everything that needs emphasis borrows this.
+  final Color accent;
+
+  /// Hairline rules and inactive borders.
   final Color hairline;
+
+  /// Text on the hero panel, which is dark in both themes.
   final Color heroText;
 
-  const DashboardColors({
+  const LanternColors({
     required this.pageBackground,
-    required this.heroPanel,
+    required this.heroPanelTop,
+    required this.heroPanelBottom,
     required this.ink,
     required this.subText,
-    required this.accentGold,
+    required this.accent,
     required this.hairline,
     required this.heroText,
   });
 
-  static const light = DashboardColors(
-    pageBackground: Color(0xFFF7F3EA),
-    heroPanel: Color(0xFF2A2317),
-    ink: Color(0xFF2A251C),
-    subText: Color(0xFF8B8173),
-    accentGold: Color(0xFFC09437),
-    hairline: Color(0x1F2A251C),
-    heroText: Color(0xFFF7F3EA),
+  /// Night. The default, and the one the design is drawn for.
+  static const dark = LanternColors(
+    pageBackground: Color(0xFF14100F),
+    heroPanelTop: Color(0xFF2C1D22),
+    heroPanelBottom: Color(0xFF14100F),
+    ink: Color(0xFFF1EADC),
+    subText: Color(0xFF97897C),
+    accent: Color(0xFFE4762E),
+    hairline: Color(0x29F1EADC),
+    heroText: Color(0xFFF6F1E4),
   );
 
-  static const dark = DashboardColors(
-    pageBackground: Color(0xFF141109),
-    heroPanel: Color(0xFF211A10),
-    ink: Color(0xFFECE4D4),
-    subText: Color(0xFF9A9082),
-    accentGold: Color(0xFFD9B25C),
-    hairline: Color(0x23ECE4D4),
-    heroText: Color(0xFFF7F3EA),
+  /// Day. Warm paper ground, but the hero panel stays a deep plum and the
+  /// accent darkens to hold contrast on paper (#B85418 clears 4.5:1 on
+  /// #F6F1E4; the night accent would not).
+  static const light = LanternColors(
+    pageBackground: Color(0xFFF6F1E4),
+    heroPanelTop: Color(0xFF2C1D22),
+    heroPanelBottom: Color(0xFF1A1315),
+    ink: Color(0xFF23201C),
+    subText: Color(0xFF7A6E63),
+    accent: Color(0xFFB85418),
+    hairline: Color(0x2423201C),
+    heroText: Color(0xFFF6F1E4),
   );
+
+  /// The accent as it appears *on the hero panel*, which is dark in both
+  /// themes - so the light theme's darkened accent would disappear there.
+  Color get accentOnHero => dark.accent;
 
   @override
-  DashboardColors copyWith({
+  LanternColors copyWith({
     Color? pageBackground,
-    Color? heroPanel,
+    Color? heroPanelTop,
+    Color? heroPanelBottom,
     Color? ink,
     Color? subText,
-    Color? accentGold,
+    Color? accent,
     Color? hairline,
     Color? heroText,
   }) {
-    return DashboardColors(
+    return LanternColors(
       pageBackground: pageBackground ?? this.pageBackground,
-      heroPanel: heroPanel ?? this.heroPanel,
+      heroPanelTop: heroPanelTop ?? this.heroPanelTop,
+      heroPanelBottom: heroPanelBottom ?? this.heroPanelBottom,
       ink: ink ?? this.ink,
       subText: subText ?? this.subText,
-      accentGold: accentGold ?? this.accentGold,
+      accent: accent ?? this.accent,
       hairline: hairline ?? this.hairline,
       heroText: heroText ?? this.heroText,
     );
   }
 
   @override
-  DashboardColors lerp(ThemeExtension<DashboardColors>? other, double t) {
-    if (other is! DashboardColors) return this;
-    return DashboardColors(
+  LanternColors lerp(ThemeExtension<LanternColors>? other, double t) {
+    if (other is! LanternColors) return this;
+    return LanternColors(
       pageBackground: Color.lerp(pageBackground, other.pageBackground, t)!,
-      heroPanel: Color.lerp(heroPanel, other.heroPanel, t)!,
+      heroPanelTop: Color.lerp(heroPanelTop, other.heroPanelTop, t)!,
+      heroPanelBottom: Color.lerp(heroPanelBottom, other.heroPanelBottom, t)!,
       ink: Color.lerp(ink, other.ink, t)!,
       subText: Color.lerp(subText, other.subText, t)!,
-      accentGold: Color.lerp(accentGold, other.accentGold, t)!,
+      accent: Color.lerp(accent, other.accent, t)!,
       hairline: Color.lerp(hairline, other.hairline, t)!,
       heroText: Color.lerp(heroText, other.heroText, t)!,
     );
   }
 }
 
-/// Display/numeral font (hero numerals, headings) - Cormorant Garamond.
+/// Zen Kaku Gothic New, used for every role in the app - Japanese and
+/// Latin alike.
+///
+/// One family everywhere is the point of this direction: the serif pairing
+/// the app started with (Cormorant/Lora/Noto Serif) read as a museum label,
+/// and dropping it is what makes this look like something made in 2026.
+/// Zen Kaku carries kanji, kana and Latin in one voice, so a caption that
+/// mixes "pronoun" with 訓 わたし no longer needs two faces to render one
+/// line.
+///
+/// It ships no italic. Nothing in the app asks for one: emphasis is done
+/// with weight, tracking and the accent instead of a synthesized slant.
+TextStyle _zen({
+  double? fontSize,
+  FontWeight? fontWeight,
+  Color? color,
+  double? letterSpacing,
+  List<FontFeature>? fontFeatures,
+  double? height,
+}) => GoogleFonts.zenKakuGothicNew(
+  fontSize: fontSize,
+  fontWeight: fontWeight,
+  color: color,
+  letterSpacing: letterSpacing,
+  fontFeatures: fontFeatures,
+  height: height,
+);
+
+/// Display role - headings and the big numerals in the lantern. Digits are
+/// tabular by default so a count doesn't jitter as it climbs.
 TextStyle displayFont({
   double? fontSize,
   FontWeight? fontWeight,
   Color? color,
+  double? letterSpacing,
   List<FontFeature>? fontFeatures,
-}) => GoogleFonts.cormorantGaramond(
+}) => _zen(
   fontSize: fontSize,
-  fontWeight: fontWeight,
+  fontWeight: fontWeight ?? FontWeight.w600,
   color: color,
-  fontFeatures: fontFeatures,
+  letterSpacing: letterSpacing ?? -0.2,
+  fontFeatures: fontFeatures ?? const [FontFeature.tabularFigures()],
 );
 
-/// Body font - Lora.
+/// Body/UI role.
 TextStyle bodyFont({
   double? fontSize,
   FontWeight? fontWeight,
-  FontStyle? fontStyle,
   Color? color,
   double? letterSpacing,
   List<FontFeature>? fontFeatures,
-}) => GoogleFonts.lora(
+}) => _zen(
   fontSize: fontSize,
   fontWeight: fontWeight,
-  fontStyle: fontStyle,
   color: color,
   letterSpacing: letterSpacing,
   fontFeatures: fontFeatures,
 );
 
-/// Japanese text font - Noto Serif JP. Covers kanji, hiragana and katakana
-/// with the same serif (明朝) weight the rest of the type is set in.
+/// Japanese text. Same family - kept as its own function because the call
+/// sites mean something by it, and a future direction may split the two
+/// again.
 TextStyle jpFont({
   double? fontSize,
   FontWeight? fontWeight,
   Color? color,
   double? letterSpacing,
-}) => GoogleFonts.notoSerifJp(
+}) => _zen(
   fontSize: fontSize,
   fontWeight: fontWeight,
   color: color,
   letterSpacing: letterSpacing,
 );
 
-/// Brush accent font - Yuji Syuku, a hand-brushed Japanese face. Used for
-/// the brand seal and the proverb line in the hero, nothing else: it is a
-/// display face and unreadable at body sizes.
-TextStyle brushFont({double? fontSize, Color? color}) =>
-    GoogleFonts.yujiSyuku(fontSize: fontSize, color: color);
+/// Small tracked-out label ("OF 150", "EXAMPLE SENTENCE"). The one place
+/// the type system leans on letter-spacing rather than weight.
+TextStyle labelFont({double? fontSize, Color? color, FontWeight? fontWeight}) => _zen(
+  fontSize: fontSize,
+  fontWeight: fontWeight ?? FontWeight.w600,
+  color: color,
+  letterSpacing: 1.4,
+);
 
 /// Formats an integer with thousands separators (`10057` → `10,057`).
 /// Small enough not to warrant pulling in `intl` for.
@@ -148,20 +210,23 @@ String formatThousands(int value) {
 }
 
 class AppTheme {
-  static ThemeData get light => _build(Brightness.light, DashboardColors.light);
+  static ThemeData get light => _build(Brightness.light, LanternColors.light);
 
-  static ThemeData get dark => _build(Brightness.dark, DashboardColors.dark);
+  static ThemeData get dark => _build(Brightness.dark, LanternColors.dark);
 
-  static ThemeData _build(Brightness brightness, DashboardColors dashboard) {
+  static ThemeData _build(Brightness brightness, LanternColors lantern) {
     final base = ThemeData(
       brightness: brightness,
       useMaterial3: true,
-      scaffoldBackgroundColor: dashboard.pageBackground,
+      scaffoldBackgroundColor: lantern.pageBackground,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: kotobaGold,
+        seedColor: LanternColors.dark.accent,
         brightness: brightness,
       ),
     );
-    return base.copyWith(extensions: [dashboard]);
+    return base.copyWith(
+      extensions: [lantern],
+      textTheme: GoogleFonts.zenKakuGothicNewTextTheme(base.textTheme),
+    );
   }
 }

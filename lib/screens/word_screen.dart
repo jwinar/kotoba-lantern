@@ -9,13 +9,14 @@ import '../services/tts_providers.dart';
 import '../services/view_history_providers.dart';
 import '../services/word_providers.dart';
 import '../theme/app_theme.dart';
+import '../widgets/lantern.dart';
 import '../widgets/word_card.dart';
 import 'settings_screen.dart';
 import 'word_list_screen.dart';
 
-/// The study card: an oversized headword with a slow-breathing ghost echo
-/// behind it, thin gold side hairlines, an ink-wash wave at the card's
-/// foot, and the JLPT rail in the top-right corner.
+/// The study card: the headword lit by the lantern's own light, with a
+/// slow-breathing ghost echo behind it, thin accent hairlines down the
+/// sides, and the level rail in the top-right corner.
 class WordScreen extends ConsumerWidget {
   /// If provided, the caller has already chosen a word (e.g. tapping a
   /// "Recently viewed" row) and set [currentWordIndexProvider] to match.
@@ -28,31 +29,31 @@ class WordScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboard = Theme.of(context).extension<DashboardColors>()!;
+    final lantern = Theme.of(context).extension<LanternColors>()!;
     final wordsAsync = ref.watch(n5WordsProvider);
     final shuffleMode = ref.watch(shuffleModeProvider);
 
     return Scaffold(
-      backgroundColor: dashboard.pageBackground,
+      backgroundColor: lantern.pageBackground,
       appBar: AppBar(
-        backgroundColor: dashboard.pageBackground,
+        backgroundColor: lantern.pageBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: dashboard.ink.withValues(alpha: 0.7)),
+          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: lantern.ink.withValues(alpha: 0.7)),
           tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
           'Kotoba Lantern',
-          style: displayFont(fontSize: 22, fontWeight: FontWeight.w600, color: dashboard.ink),
+          style: displayFont(fontSize: 18, color: lantern.ink),
         ),
         actions: [
           IconButton(
             icon: Icon(
               Icons.shuffle,
-              color: shuffleMode ? dashboard.accentGold : dashboard.ink.withValues(alpha: 0.6),
+              color: shuffleMode ? lantern.accent : lantern.ink.withValues(alpha: 0.6),
             ),
             tooltip: shuffleMode ? 'Smart shuffle on' : 'Smart shuffle',
             onPressed: () {
@@ -61,7 +62,7 @@ class WordScreen extends ConsumerWidget {
             },
           ),
           IconButton(
-            icon: Icon(Icons.list, color: dashboard.ink.withValues(alpha: 0.6)),
+            icon: Icon(Icons.list, color: lantern.ink.withValues(alpha: 0.6)),
             tooltip: 'Word list',
             onPressed: wordsAsync.maybeWhen(
               data: (words) => () => Navigator.of(context).push(
@@ -71,7 +72,7 @@ class WordScreen extends ConsumerWidget {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: dashboard.ink.withValues(alpha: 0.6)),
+            icon: Icon(Icons.settings_outlined, color: lantern.ink.withValues(alpha: 0.6)),
             tooltip: 'Settings',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -80,9 +81,9 @@ class WordScreen extends ConsumerWidget {
         ],
       ),
       body: wordsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator(color: dashboard.accentGold)),
+        loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
         error: (err, stack) => Center(child: Text('Failed to load words: $err')),
-        data: (words) => _WordBrowser(words: words, dashboard: dashboard),
+        data: (words) => _WordBrowser(words: words, lantern: lantern),
       ),
     );
   }
@@ -90,9 +91,9 @@ class WordScreen extends ConsumerWidget {
 
 class _WordBrowser extends ConsumerStatefulWidget {
   final List<JapaneseWord> words;
-  final DashboardColors dashboard;
+  final LanternColors lantern;
 
-  const _WordBrowser({required this.words, required this.dashboard});
+  const _WordBrowser({required this.words, required this.lantern});
 
   @override
   ConsumerState<_WordBrowser> createState() => _WordBrowserState();
@@ -117,11 +118,11 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
   @override
   Widget build(BuildContext context) {
     final words = widget.words;
-    final dashboard = widget.dashboard;
+    final lantern = widget.lantern;
 
     if (words.isEmpty) {
       return Center(
-        child: Text('No words available.', style: bodyFont(color: dashboard.ink)),
+        child: Text('No words available.', style: bodyFont(color: lantern.ink)),
       );
     }
 
@@ -161,16 +162,17 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
 
     return Stack(
       children: [
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: waveFloorHeight,
-          child: CustomPaint(
-            painter: WaveFloorPainter(
-              color: dashboard.accentGold,
-              opacity1: motif.waveOpacity1,
-              opacity2: motif.waveOpacity2,
+        // The same light the lantern throws on the home screen, here
+        // centred behind the headword - the card reads as the page you're
+        // holding up to it.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: LanternGlowPainter(
+                color: lantern.accent,
+                intensity: motif.glowIntensity,
+                center: const Alignment(0, -0.25),
+              ),
             ),
           ),
         ),
@@ -178,34 +180,34 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
           left: 20,
           right: 20,
           top: 12,
-          bottom: waveFloorHeight,
+          bottom: 150,
           child: IgnorePointer(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(width: 1.5, color: dashboard.accentGold.withValues(alpha: motif.railOpacity)),
-                Container(width: 1.5, color: dashboard.accentGold.withValues(alpha: motif.railOpacity)),
+                Container(width: 1.2, color: lantern.accent.withValues(alpha: motif.railOpacity)),
+                Container(width: 1.2, color: lantern.accent.withValues(alpha: motif.railOpacity)),
               ],
             ),
           ),
         ),
         Positioned(
           top: 8,
-          right: 30,
-          child: JlptRail(dashboard: dashboard, level: word.level),
+          right: 28,
+          child: LevelRail(lantern: lantern, level: word.level),
         ),
         Positioned(
           left: 0,
           right: 0,
           top: 0,
-          bottom: waveFloorHeight,
+          bottom: 150,
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: HeroContent(
                 word: word,
-                dashboard: dashboard,
+                lantern: lantern,
                 motif: motif,
                 onSpeak: () => ttsService.speak(word.japanese),
                 learned: progress.learned,
@@ -221,19 +223,20 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
           right: 0,
           bottom: 0,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 0, 22, 14),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (word.exampleSentence != null)
                   ExampleCard(
                     word: word,
-                    dashboard: dashboard,
+                    lantern: lantern,
+                    motif: motif,
                     onSpeak: () => ttsService.speak(word.exampleSentence!),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Pager(
-                  dashboard: dashboard,
+                  lantern: lantern,
                   index: index,
                   total: words.length,
                   onPrevious: shuffleMode

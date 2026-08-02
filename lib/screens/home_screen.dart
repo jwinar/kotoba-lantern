@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,19 +6,20 @@ import '../services/view_history_providers.dart';
 import '../services/view_history_service.dart';
 import '../services/word_providers.dart';
 import '../theme/app_theme.dart';
+import '../widgets/lantern.dart';
 import 'settings_screen.dart';
 import 'word_list_screen.dart';
 import 'word_screen.dart';
 
-/// The app's dashboard home screen: an ink hero with a progress ring, a
-/// 7-day streak row, and a "recently viewed" list. Studying itself happens
-/// on [WordScreen], reached by tapping the ring or a recent word.
+/// The app's home screen: a night hero holding the lantern, a 7-day streak
+/// row of lamps, and a "recently viewed" list. Studying itself happens on
+/// [WordScreen], reached by tapping the lantern or a recent word.
 ///
-/// The ring counts words actually opened on the study card
-/// ([ViewHistoryService]), not words marked learned - it answers "how much
-/// of the deck have I looked at", which is the number that makes a daily
-/// habit feel like it's moving. Learned/favorite are a separate, explicit
-/// signal and deliberately don't feed this.
+/// The lantern fills with light for every word actually opened on the study
+/// card ([ViewHistoryService]) - not for words marked learned. It answers
+/// "how much of the deck have I looked at", which is the number that makes
+/// a daily habit feel like it's moving. Learned/favorite are a separate,
+/// explicit signal and deliberately don't feed it.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -105,21 +104,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const SettingsScreen()),
     );
-    // Settings can reset progress, which empties the ring and the streak.
+    // Settings can reset progress, which puts the lantern out.
     _reloadHistory();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dashboard = Theme.of(context).extension<DashboardColors>()!;
+    final lantern = Theme.of(context).extension<LanternColors>()!;
     final wordsAsync = ref.watch(n5WordsProvider);
 
     return Scaffold(
-      backgroundColor: dashboard.pageBackground,
+      backgroundColor: lantern.pageBackground,
       body: SafeArea(
         bottom: false,
         child: wordsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
           error: (err, stack) => Center(child: Text('Failed to load words: $err')),
           data: (words) => FutureBuilder<ViewHistorySnapshot>(
             future: _historyFuture,
@@ -130,20 +129,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _HeroSection(
-                      dashboard: dashboard,
+                      lantern: lantern,
                       viewedCount: history.viewedCount,
                       total: words.length,
-                      onTapRing: () => _openWordScreen(),
+                      onTapLantern: () => _openWordScreen(),
                       onOpenLibrary: () => _openWordList(words),
                       onSettingsTap: _openSettings,
                     ),
                     _StreakSection(
-                      dashboard: dashboard,
+                      lantern: lantern,
                       streak: history.streak,
                       activeDateKeys: history.activeDateKeys,
                     ),
                     _RecentlyViewedSection(
-                      dashboard: dashboard,
+                      lantern: lantern,
                       words: words,
                       recentIndices: history.recentIndices,
                       onSeeAll: () => _openRecentlyViewed(words, history.recentIndices),
@@ -161,129 +160,122 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// The dark ink panel at the top: brand row, proverb, progress ring and
-/// the Library shortcut, over a 学 watermark and ink-wash waves.
+/// The night panel: brand row, proverb, the lantern, and the Library
+/// shortcut, over a warm glow that reads as the lantern lighting the panel
+/// it hangs in.
 class _HeroSection extends StatelessWidget {
-  final DashboardColors dashboard;
+  final LanternColors lantern;
   final int viewedCount;
   final int total;
-  final VoidCallback onTapRing;
+  final VoidCallback onTapLantern;
   final VoidCallback onOpenLibrary;
   final VoidCallback onSettingsTap;
 
   const _HeroSection({
-    required this.dashboard,
+    required this.lantern,
     required this.viewedCount,
     required this.total,
-    required this.onTapRing,
+    required this.onTapLantern,
     required this.onOpenLibrary,
     required this.onSettingsTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final progress = total == 0 ? 0.0 : (viewedCount / total).clamp(0.0, 1.0);
-    final percentLabel = total == 0 ? 0 : ((viewedCount / total) * 100).round();
+    final lit = total == 0 ? 0.0 : (viewedCount / total).clamp(0.0, 1.0);
+    final percentLit = (lit * 100).round();
+    final stillDark = (total - viewedCount).clamp(0, total);
+    final accent = lantern.accentOnHero;
 
     return ClipRRect(
       borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(28),
-        bottomRight: Radius.circular(28),
+        bottomLeft: Radius.circular(30),
+        bottomRight: Radius.circular(30),
       ),
-      child: ColoredBox(
-        color: dashboard.heroPanel,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomCenter,
+            colors: [lantern.heroPanelTop, lantern.heroPanelBottom],
+            stops: const [0.0, 0.72],
+          ),
+        ),
         child: Stack(
-          clipBehavior: Clip.hardEdge,
           children: [
-            Positioned(
-              right: -36,
-              top: -8,
-              child: Text(
-                '学',
-                style: jpFont(
-                  fontSize: 220,
-                  fontWeight: FontWeight.w700,
-                  color: dashboard.accentGold.withValues(alpha: isDark ? 0.14 : 0.20),
+            // The lantern's own light spilling onto the panel. Drawn behind
+            // everything, centred on where the lantern hangs, and dimmed
+            // with the deck's progress: an unlit lantern casts no glow.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: LanternGlowPainter(color: accent, intensity: 0.25 + 0.75 * lit),
                 ),
               ),
             ),
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _HeroWavePainter(isDark: isDark, waveColor: dashboard.pageBackground),
-              ),
-            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 12, 32),
+              padding: const EdgeInsets.fromLTRB(20, 12, 12, 30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _BrandSeal(dashboard: dashboard),
+                      _BrandSeal(lantern: lantern),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 3),
                             Text(
                               'Kotoba Lantern',
-                              style: displayFont(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                                color: dashboard.heroText,
-                              ),
+                              style: displayFont(fontSize: 21, color: lantern.heroText),
                             ),
                             Text(
                               '日本語 · JLPT N5',
                               style: jpFont(
-                                fontSize: 12,
+                                fontSize: 11.5,
                                 letterSpacing: 0.6,
-                                color: dashboard.accentGold.withValues(alpha: 0.85),
+                                color: accent.withValues(alpha: 0.9),
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.settings_outlined, color: dashboard.heroText),
+                        icon: Icon(Icons.settings_outlined, color: lantern.heroText),
                         tooltip: 'Settings',
                         onPressed: onSettingsTap,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Center(
                     child: Text(
                       // "Perseverance is strength" - the habit the streak
                       // row below is trying to build, said the old way.
                       '継続は力なり',
-                      style: brushFont(fontSize: 22, color: dashboard.accentGold),
+                      style: jpFont(
+                        fontSize: 13,
+                        letterSpacing: 3,
+                        color: accent.withValues(alpha: 0.85),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   Center(
                     child: GestureDetector(
-                      onTap: onTapRing,
+                      onTap: onTapLantern,
                       child: SizedBox(
-                        width: 176,
-                        height: 176,
+                        width: 150,
+                        height: 208,
                         child: TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0, end: progress),
-                          duration: const Duration(milliseconds: 900),
+                          tween: Tween(begin: 0, end: lit),
+                          duration: const Duration(milliseconds: 1100),
                           curve: Curves.easeOutCubic,
                           builder: (context, value, child) {
-                            return CustomPaint(
-                              painter: _RingPainter(
-                                progress: value,
-                                trackColor: Colors.white.withValues(alpha: isDark ? 0.14 : 0.16),
-                                arcColor: dashboard.accentGold,
-                                strokeWidth: 9,
-                              ),
-                              child: child,
-                            );
+                            return CustomPaint(painter: LanternPainter(lit: value, light: accent), child: child);
                           },
                           child: Center(
                             child: Column(
@@ -291,20 +283,11 @@ class _HeroSection extends StatelessWidget {
                               children: [
                                 Text(
                                   '$viewedCount',
-                                  style: displayFont(
-                                    fontSize: 56,
-                                    fontWeight: FontWeight.w600,
-                                    color: dashboard.heroText,
-                                    fontFeatures: const [FontFeature.tabularFigures()],
-                                  ),
+                                  style: displayFont(fontSize: 46, color: lantern.heroText),
                                 ),
                                 Text(
-                                  'OF $total STUDIED',
-                                  style: bodyFont(
-                                    fontSize: 11,
-                                    letterSpacing: 1.2,
-                                    color: dashboard.accentGold.withValues(alpha: 0.85),
-                                  ),
+                                  'OF $total',
+                                  style: labelFont(fontSize: 10.5, color: lantern.heroText.withValues(alpha: 0.8)),
                                 ),
                               ],
                             ),
@@ -313,35 +296,30 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Center(
                     child: Text(
-                      '$percentLabel% through JLPT N5 — keep going.',
+                      // Counts what's left rather than what's done: with an
+                      // empty deck "0% lit" is discouraging, while "150
+                      // words still dark" is just a fact about the lantern.
+                      '$percentLit% lit — $stillDark words still dark',
                       textAlign: TextAlign.center,
-                      style: bodyFont(
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
-                        color: dashboard.heroText.withValues(alpha: 0.75),
-                      ),
+                      style: bodyFont(fontSize: 12.5, color: lantern.heroText.withValues(alpha: 0.7)),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Center(
                     child: OutlinedButton.icon(
                       onPressed: onOpenLibrary,
-                      icon: Icon(Icons.menu_book_outlined, size: 16, color: dashboard.accentGold),
+                      icon: Icon(Icons.menu_book_outlined, size: 16, color: accent),
                       label: Text(
                         'Library',
-                        style: bodyFont(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: dashboard.accentGold,
-                        ),
+                        style: bodyFont(fontSize: 13, fontWeight: FontWeight.w600, color: accent),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: dashboard.accentGold.withValues(alpha: 0.6)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        side: BorderSide(color: accent.withValues(alpha: 0.7)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
                       ),
                     ),
                   ),
@@ -356,9 +334,9 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _BrandSeal extends StatelessWidget {
-  final DashboardColors dashboard;
+  final LanternColors lantern;
 
-  const _BrandSeal({required this.dashboard});
+  const _BrandSeal({required this.lantern});
 
   @override
   Widget build(BuildContext context) {
@@ -366,114 +344,32 @@ class _BrandSeal extends StatelessWidget {
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: dashboard.accentGold,
-        borderRadius: BorderRadius.circular(10),
+        color: lantern.accentOnHero,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: lantern.accentOnHero.withValues(alpha: 0.45),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       alignment: Alignment.center,
       child: Text(
         '語',
-        style: jpFont(fontSize: 22, fontWeight: FontWeight.w700, color: dashboard.heroPanel),
+        style: jpFont(fontSize: 21, fontWeight: FontWeight.w700, color: lantern.heroPanelBottom),
       ),
     );
   }
 }
 
-class _RingPainter extends CustomPainter {
-  final double progress;
-  final Color trackColor;
-  final Color arcColor;
-  final double strokeWidth;
-
-  _RingPainter({
-    required this.progress,
-    required this.trackColor,
-    required this.arcColor,
-    required this.strokeWidth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = (size.shortestSide - strokeWidth) / 2;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, trackPaint);
-
-    if (progress > 0) {
-      final arcPaint = Paint()
-        ..color = arcColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round;
-      const startAngle = -math.pi / 2;
-      final sweepAngle = 2 * math.pi * progress;
-      canvas.drawArc(rect, startAngle, sweepAngle, false, arcPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _RingPainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.trackColor != trackColor ||
-      oldDelegate.arcColor != arcColor ||
-      oldDelegate.strokeWidth != strokeWidth;
-}
-
-/// Decorative ink-wash wave bands + scallop arcs along the hero's bottom
-/// edge, painted in the page background color at low opacity so they read
-/// as a soft transition into the section below.
-class _HeroWavePainter extends CustomPainter {
-  final bool isDark;
-  final Color waveColor;
-
-  _HeroWavePainter({required this.isDark, required this.waveColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final band1Opacity = isDark ? 0.16 : 0.28;
-    final band2Opacity = isDark ? 0.10 : 0.16;
-    final scallopOpacity = isDark ? 0.18 : 0.22;
-
-    void drawBand(double baseY, double amplitude, double opacity) {
-      final path = Path()..moveTo(0, baseY);
-      final quarter = size.width / 4;
-      path.quadraticBezierTo(quarter, baseY - amplitude, quarter * 2, baseY);
-      path.quadraticBezierTo(quarter * 3, baseY + amplitude, size.width, baseY);
-      path.lineTo(size.width, size.height);
-      path.lineTo(0, size.height);
-      path.close();
-      canvas.drawPath(path, Paint()..color = waveColor.withValues(alpha: opacity));
-    }
-
-    drawBand(size.height - 50, 10, band1Opacity);
-    drawBand(size.height - 30, 8, band2Opacity);
-
-    final scallopPaint = Paint()..color = waveColor.withValues(alpha: scallopOpacity);
-    const scallopCount = 3;
-    final scallopWidth = size.width / scallopCount;
-    for (var i = 0; i < scallopCount; i++) {
-      final cx = scallopWidth * (i + 0.5);
-      canvas.drawCircle(Offset(cx, size.height), scallopWidth * 0.5, scallopPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _HeroWavePainter oldDelegate) =>
-      oldDelegate.isDark != isDark || oldDelegate.waveColor != waveColor;
-}
-
 class _StreakSection extends StatelessWidget {
-  final DashboardColors dashboard;
+  final LanternColors lantern;
   final int streak;
   final Set<String> activeDateKeys;
 
   const _StreakSection({
-    required this.dashboard,
+    required this.lantern,
     required this.streak,
     required this.activeDateKeys,
   });
@@ -487,26 +383,19 @@ class _StreakSection extends StatelessWidget {
     final weekDays = List.generate(7, (i) => monday.add(Duration(days: i)));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 26, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text.rich(
-            TextSpan(
-              style: bodyFont(fontSize: 15, color: dashboard.ink),
-              children: [
-                const TextSpan(text: 'This week · '),
-                TextSpan(
-                  text: '$streak-day streak ',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                // 火 needs the Japanese face explicitly. Inheriting the
-                // body font (Lora, Latin-only) leaves it to whatever the
-                // platform happens to fall back to - which renders as a
-                // tofu box anywhere without a CJK system font.
-                TextSpan(text: '火', style: jpFont(fontSize: 15, color: dashboard.ink)),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('This week', style: bodyFont(fontSize: 15, fontWeight: FontWeight.w600, color: lantern.ink)),
+              Text(
+                streak == 1 ? '1-day streak' : '$streak-day streak',
+                style: bodyFont(fontSize: 13, color: lantern.accent),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Row(
@@ -521,26 +410,39 @@ class _StreakSection extends StatelessWidget {
                         aspectRatio: 1,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: active ? dashboard.accentGold : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            border: active
-                                ? null
-                                : Border.all(color: dashboard.hairline, width: 1.2),
+                            // A lit day is a small lantern of its own; an
+                            // unlit one is the same lamp, unlit - the
+                            // outline stays so the week reads as seven
+                            // lamps rather than four shapes and three gaps.
+                            color: active ? lantern.accent : Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: active ? null : Border.all(color: lantern.hairline, width: 1.2),
+                            boxShadow: active
+                                ? [
+                                    BoxShadow(
+                                      color: lantern.accent.withValues(alpha: 0.4),
+                                      blurRadius: 12,
+                                    ),
+                                  ]
+                                : null,
                           ),
-                          child: active
-                              ? Center(
-                                  child: Text(
-                                    '火',
-                                    style: jpFont(fontSize: 14, color: dashboard.heroPanel),
-                                  ),
-                                )
-                              : null,
+                          child: Center(
+                            child: Text(
+                              '灯',
+                              style: jpFont(
+                                fontSize: 13,
+                                color: active
+                                    ? lantern.heroPanelBottom
+                                    : lantern.subText.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         _weekdayLetters[i],
-                        style: bodyFont(fontSize: 11, color: dashboard.subText),
+                        style: bodyFont(fontSize: 11, color: lantern.subText),
                       ),
                     ],
                   ),
@@ -555,14 +457,14 @@ class _StreakSection extends StatelessWidget {
 }
 
 class _RecentlyViewedSection extends StatelessWidget {
-  final DashboardColors dashboard;
+  final LanternColors lantern;
   final List<JapaneseWord> words;
   final List<int> recentIndices;
   final VoidCallback onSeeAll;
   final ValueChanged<int> onTapWord;
 
   const _RecentlyViewedSection({
-    required this.dashboard,
+    required this.lantern,
     required this.words,
     required this.recentIndices,
     required this.onSeeAll,
@@ -571,133 +473,90 @@ class _RecentlyViewedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final validIndices =
         recentIndices.where((i) => i >= 0 && i < words.length).take(6).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-      child: Stack(
+      padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _WaveLinePainter(
-                color: dashboard.subText.withValues(alpha: isDark ? 0.30 : 0.40),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recently viewed',
-                    style: bodyFont(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: dashboard.ink,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: onSeeAll,
-                    child: Text(
-                      'See all',
-                      style: bodyFont(fontSize: 13, color: dashboard.accentGold),
-                    ),
-                  ),
-                ],
+              Text(
+                'Recently viewed',
+                style: bodyFont(fontSize: 15, fontWeight: FontWeight.w600, color: lantern.ink),
               ),
-              const SizedBox(height: 8),
-              if (validIndices.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    'Words you view will show up here.',
-                    style: bodyFont(fontSize: 13, color: dashboard.subText),
-                  ),
-                )
-              else
-                ...List.generate(validIndices.length, (i) {
-                  final word = words[validIndices[i]];
-                  final isLast = i == validIndices.length - 1;
-                  return Column(
-                    children: [
-                      InkWell(
-                        onTap: () => onTapWord(validIndices[i]),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 72,
-                                child: Text(
-                                  word.japanese,
-                                  style: jpFont(fontSize: 22, color: dashboard.ink),
+              GestureDetector(
+                onTap: onSeeAll,
+                child: Text('See all', style: bodyFont(fontSize: 13, color: lantern.accent)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (validIndices.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Words you view will show up here.',
+                style: bodyFont(fontSize: 13, color: lantern.subText),
+              ),
+            )
+          else
+            ...List.generate(validIndices.length, (i) {
+              final word = words[validIndices[i]];
+              final isLast = i == validIndices.length - 1;
+              return Column(
+                children: [
+                  InkWell(
+                    onTap: () => onTapWord(validIndices[i]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 72,
+                            child: Text(
+                              word.japanese,
+                              style: jpFont(fontSize: 22, fontWeight: FontWeight.w500, color: lantern.ink),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  word.kana,
+                                  style: jpFont(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: lantern.accent,
+                                  ),
+                                ),
+                                Text(
+                                  word.english,
+                                  style: bodyFont(fontSize: 13, color: lantern.subText),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      word.kana,
-                                      style: jpFont(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: dashboard.accentGold,
-                                      ),
-                                    ),
-                                    Text(
-                                      word.english,
-                                      style: bodyFont(fontSize: 13, color: dashboard.subText),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.chevron_right, color: dashboard.subText),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                          Icon(Icons.chevron_right, color: lantern.subText),
+                        ],
                       ),
-                      if (!isLast) Divider(height: 1, color: dashboard.hairline),
-                    ],
-                  );
-                }),
-            ],
-          ),
+                    ),
+                  ),
+                  if (!isLast) Divider(height: 1, color: lantern.hairline),
+                ],
+              );
+            }),
         ],
       ),
     );
   }
-}
-
-class _WaveLinePainter extends CustomPainter {
-  final Color color;
-
-  _WaveLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final y = size.height * 0.18;
-    final path = Path()..moveTo(0, y);
-    path.quadraticBezierTo(size.width * 0.25, y - 14, size.width * 0.5, y);
-    path.quadraticBezierTo(size.width * 0.75, y + 14, size.width, y);
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _WaveLinePainter oldDelegate) => oldDelegate.color != color;
 }

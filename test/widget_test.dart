@@ -68,7 +68,8 @@ void main() {
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Kotoba Lantern'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
-    expect(find.text('OF 150 STUDIED'), findsOneWidget);
+    expect(find.text('OF 150'), findsOneWidget);
+    expect(find.text('0% lit — 150 words still dark'), findsOneWidget);
   });
 
   testWidgets('the study card shows the word, its reading and its example',
@@ -77,7 +78,7 @@ void main() {
 
     expect(find.text('私'), findsWidgets); // headword + breathing echo
     expect(find.text('わたし'), findsOneWidget);
-    expect(find.text('watashi'), findsOneWidget);
+    expect(find.text('WATASHI'), findsOneWidget);
     expect(find.text('I; me'), findsOneWidget);
     expect(find.text('私は学生です。'), findsOneWidget);
   });

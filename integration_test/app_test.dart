@@ -35,17 +35,17 @@ void main() {
       (tester) async {
     await tester.pumpWidget(const ProviderScope(child: KotobaLanternApp()));
 
-    // The deck loads off the bundle before the ring can know its total.
-    await pumpUntilFound(tester, find.text('OF 150 STUDIED'));
+    // The deck loads off the bundle before the lantern knows its total.
+    await pumpUntilFound(tester, find.text('OF 150'));
     expect(find.text('Kotoba Lantern'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
 
-    // The ring is the way into the deck.
-    await tester.tap(find.text('OF 150 STUDIED'));
+    // The lantern is the way into the deck.
+    await tester.tap(find.text('OF 150'));
     await pumpUntilFound(tester, find.text('1 / 150'));
 
     expect(find.text('わたし'), findsOneWidget);
-    expect(find.text('watashi'), findsOneWidget);
+    expect(find.text('WATASHI'), findsOneWidget);
     expect(find.text('私は学生です。'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Next'));
@@ -57,9 +57,9 @@ void main() {
     await pumpUntilFound(tester, find.byTooltip('Marked as learned'));
 
     // Back to the dashboard: the two words just opened are now history, so
-    // the ring counts 2 and both show up under Recently viewed.
+    // the lantern counts 2 and both show up under Recently viewed.
     await tester.tap(find.byTooltip('Back'));
-    await pumpUntilFound(tester, find.text('OF 150 STUDIED'));
+    await pumpUntilFound(tester, find.text('OF 150'));
     await pumpUntilFound(tester, find.text('わたし'));
     expect(find.text('2'), findsOneWidget);
   });
