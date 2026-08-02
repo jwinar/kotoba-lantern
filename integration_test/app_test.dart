@@ -25,7 +25,7 @@ Future<void> pumpUntilFound(
     await tester.pump(const Duration(milliseconds: 100));
     if (finder.evaluate().isNotEmpty) return;
   }
-  fail('Timed out after $timeout waiting for: ${finder.description}');
+  fail('Timed out after $timeout waiting for: $finder');
 }
 
 void main() {
