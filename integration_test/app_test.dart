@@ -7,44 +7,60 @@ import 'package:kotoba_lantern/main.dart';
 /// A clean `flutter build ios` says the code compiles; this says it actually
 /// launches, loads the deck off the bundle and responds to taps.
 ///
-/// Every wait here is `pump(Duration)`, never `pumpAndSettle`: the study
-/// card's breathing echo animates forever by design, so "wait until no
-/// animation is running" never returns on that screen.
+/// Waits here are never `pumpAndSettle`: the study card's breathing echo
+/// animates forever by design, so "wait until no animation is running" never
+/// returns on that screen. They're also never a fixed `pump(Duration)` long
+/// enough to "probably" be safe - a debug-mode first frame on a cold
+/// simulator can take seconds, and picking a number is how you get a test
+/// that passes on your machine and fails in CI. [pumpUntilFound] polls
+/// instead: frames until the thing appears, or a real failure with the
+/// finder named.
+Future<void> pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (finder.evaluate().isNotEmpty) return;
+  }
+  fail('Timed out after $timeout waiting for: ${finder.description}');
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('launches, opens the study card, pages through the deck',
       (tester) async {
     await tester.pumpWidget(const ProviderScope(child: KotobaLanternApp()));
-    // Asset load + the ring's draw-in.
-    await tester.pump(const Duration(seconds: 2));
 
+    // The deck loads off the bundle before the ring can know its total.
+    await pumpUntilFound(tester, find.text('OF 150 STUDIED'));
     expect(find.text('Kotoba Lantern'), findsOneWidget);
-    expect(find.text('OF 150 STUDIED'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
 
     // The ring is the way into the deck.
     await tester.tap(find.text('OF 150 STUDIED'));
-    await tester.pump(const Duration(seconds: 1));
+    await pumpUntilFound(tester, find.text('1 / 150'));
 
-    expect(find.text('1 / 150'), findsOneWidget);
     expect(find.text('わたし'), findsOneWidget);
+    expect(find.text('watashi'), findsOneWidget);
     expect(find.text('私は学生です。'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Next'));
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('2 / 150'), findsOneWidget);
+    await pumpUntilFound(tester, find.text('2 / 150'));
 
     // Marking a word learned is the one write that has to survive a real
     // platform channel - SharedPreferences on the device, not a mock.
     await tester.tap(find.byTooltip('Mark as learned'));
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.byTooltip('Marked as learned'), findsOneWidget);
+    await pumpUntilFound(tester, find.byTooltip('Marked as learned'));
 
-    // Back to the dashboard: the two words just opened are now history.
+    // Back to the dashboard: the two words just opened are now history, so
+    // the ring counts 2 and both show up under Recently viewed.
     await tester.tap(find.byTooltip('Back'));
-    await tester.pump(const Duration(seconds: 1));
-    expect(find.text('2', findRichText: false), findsWidgets);
-    expect(find.text('わたし'), findsOneWidget);
+    await pumpUntilFound(tester, find.text('OF 150 STUDIED'));
+    await pumpUntilFound(tester, find.text('わたし'));
+    expect(find.text('2'), findsOneWidget);
   });
 }
