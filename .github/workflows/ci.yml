@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 jobs:
   # Unit/widget tests and the analyzer are platform-independent, so they run
-  # on a Linux runner - only the iOS compile below needs a Mac.
+  # on a Linux runner - only the iOS jobs below need a Mac.
   analyze-and-test:
     runs-on: ubuntu-latest
     steps:
@@ -31,6 +31,45 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter build ios --release --no-codesign
+
+  ios-simulator:
+    # A clean compile says nothing about whether the app launches. This boots
+    # a real iOS Simulator (Apple's own preinstalled runtimes - no Apple ID or
+    # Developer Program needed) and drives the app on it: deck loads off the
+    # bundle, the ring opens the study card, Next pages, "learned" writes
+    # through a real SharedPreferences channel. Runs only after ios-build,
+    # since booting a simulator for code that doesn't compile is wasted time.
+    needs: ios-build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+
+      - name: Boot iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F-]{36}')
+          echo "Booting simulator $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID"
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+
+      - run: flutter test integration_test/app_test.dart -d "$UDID"
+
+      - name: Screenshot the running app
+        # Best-effort: the run above is the actual gate. This just leaves a
+        # picture of the last frame behind as a build artifact.
+        if: always()
+        run: xcrun simctl io "$UDID" screenshot simulator.png || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-simulator-screenshot
+          path: simulator.png
+          if-no-files-found: ignore
 
   deck-is-generated:
     # The JSON assets are generated from scripts/build_n5_data.py - this
