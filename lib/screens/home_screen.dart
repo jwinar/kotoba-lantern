@@ -500,7 +500,11 @@ class _StreakSection extends StatelessWidget {
                   text: '$streak-day streak ',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                const TextSpan(text: '火'),
+                // 火 needs the Japanese face explicitly. Inheriting the
+                // body font (Lora, Latin-only) leaves it to whatever the
+                // platform happens to fall back to - which renders as a
+                // tofu box anywhere without a CJK system font.
+                TextSpan(text: '火', style: jpFont(fontSize: 15, color: dashboard.ink)),
               ],
             ),
           ),

@@ -155,15 +155,29 @@ class HeroContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          captionFor(word),
-          textAlign: TextAlign.center,
-          style: bodyFont(
-            fontSize: 15,
-            fontStyle: FontStyle.italic,
-            color: dashboard.subText,
-            letterSpacing: 0.6,
+        Text.rich(
+          TextSpan(
+            children: [
+              for (final segment in captionFor(word))
+                TextSpan(
+                  text: segment.text,
+                  // Japanese segments (音/訓 and the readings themselves)
+                  // must name the Japanese face. Left to the italic body
+                  // font, which has no CJK coverage, they fall back to
+                  // whatever the platform offers - tofu boxes where that's
+                  // nothing.
+                  style: segment.isJapanese
+                      ? jpFont(fontSize: 15, color: dashboard.subText)
+                      : bodyFont(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: dashboard.subText,
+                          letterSpacing: 0.6,
+                        ),
+                ),
+            ],
           ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         Row(
@@ -205,16 +219,33 @@ class HeroContent extends StatelessWidget {
   }
 }
 
+/// One run of the caption line, tagged with which face has to draw it -
+/// the caption mixes Latin ("noun", "7 strokes") with Japanese (音, 訓 and
+/// the readings), and no single font in the app covers both.
+class CaptionSegment {
+  final String text;
+  final bool isJapanese;
+
+  const CaptionSegment(this.text, {this.isJapanese = false});
+}
+
 /// The caption under the gloss: word class always, plus stroke count and
 /// on/kun readings when the headword is a single kanji. A compound or a
 /// kana word has neither, so it keeps the plain word-class caption rather
 /// than describing one arbitrary character of itself.
-String captionFor(JapaneseWord word) {
-  final parts = <String>[word.partOfSpeech];
-  if (word.onReading != null) parts.add('音 ${word.onReading}');
-  if (word.kunReading != null) parts.add('訓 ${word.kunReading}');
-  if (word.strokeCount != null) parts.add('${word.strokeCount} strokes');
-  return parts.join(' · ');
+List<CaptionSegment> captionFor(JapaneseWord word) {
+  final segments = <CaptionSegment>[CaptionSegment(word.partOfSpeech)];
+  void add(String japanese) {
+    segments.add(const CaptionSegment(' · '));
+    segments.add(CaptionSegment(japanese, isJapanese: true));
+  }
+
+  if (word.onReading != null) add('音 ${word.onReading}');
+  if (word.kunReading != null) add('訓 ${word.kunReading}');
+  if (word.strokeCount != null) {
+    segments.add(CaptionSegment(' · ${word.strokeCount} strokes'));
+  }
+  return segments;
 }
 
 /// The oversized, near-transparent duplicate of the headword that slowly
