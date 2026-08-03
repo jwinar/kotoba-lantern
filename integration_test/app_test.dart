@@ -36,19 +36,22 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: KotobaLanternApp()));
 
     // The deck loads off the bundle before the lantern knows its total.
-    await pumpUntilFound(tester, find.text('OF 719'));
+    // The count isn't pinned here: the decks are generated from upstream
+    // word lists, and a hardcoded total would turn an upstream typo fix
+    // into a failing simulator run.
+    await pumpUntilFound(tester, find.textContaining('OF '));
     expect(find.text('Kotoba Lantern'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
 
     // The lantern is the way into the deck.
-    await tester.tap(find.text('OF 719'));
-    await pumpUntilFound(tester, find.text('1 / 719'));
+    await tester.tap(find.textContaining('OF '));
+    await pumpUntilFound(tester, find.textContaining('1 / '));
 
     expect(find.text('ああ'), findsWidgets);
     expect(find.text('AA'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Next'));
-    await pumpUntilFound(tester, find.text('2 / 719'));
+    await pumpUntilFound(tester, find.textContaining('2 / '));
 
     // Marking a word learned is the one write that has to survive a real
     // platform channel - SharedPreferences on the device, not a mock.
@@ -58,7 +61,7 @@ void main() {
     // Back to the dashboard: the two words just opened are now history, so
     // the lantern counts 2 and both show up under Recently viewed.
     await tester.tap(find.byTooltip('Back'));
-    await pumpUntilFound(tester, find.text('OF 719'));
+    await pumpUntilFound(tester, find.textContaining('OF '));
     await pumpUntilFound(tester, find.text('ああ'));
     expect(find.text('2'), findsOneWidget);
   });

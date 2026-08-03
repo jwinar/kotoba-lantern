@@ -1,6 +1,6 @@
 # Kotoba Lantern
 
-A quiet daily Japanese vocabulary deck: **7,902 words across JLPT N5-N1**,
+A quiet daily Japanese vocabulary deck: **7,897 words across JLPT N5-N1**,
 each with its kana reading, romaji and gloss, plus stroke counts and 音/訓
 readings for single-kanji words and on-device pronunciation. Flutter, offline,
 no account.
@@ -11,7 +11,7 @@ what was carried over and what was replaced.</sub>
 
 ## What's in it
 
-- **Five levels.** N5 (719 words) through N1 (2,655), picked from a row of
+- **Five levels.** N5 (718 words) through N1 (2,654), picked from a row of
   lamps in the hero. Each level keeps its own lantern, its own history and its
   own recently-viewed list; the streak counts a day studied in any of them.
 - **Home** — a night panel holding a paper lantern that fills with light as

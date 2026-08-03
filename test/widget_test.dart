@@ -64,13 +64,14 @@ void main() {
   }
 
   testWidgets('app shell renders the dashboard home screen', (tester) async {
+    final n5 = (await container.read(wordsProvider.future)).length;
     await pumpApp(tester);
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Kotoba Lantern'), findsOneWidget);
     expect(find.text('Recently viewed'), findsOneWidget);
-    expect(find.text('OF 719'), findsOneWidget);
-    expect(find.text('0% lit — 719 words still dark'), findsOneWidget);
+    expect(find.text('OF $n5'), findsOneWidget);
+    expect(find.text('0% lit — $n5 words still dark'), findsOneWidget);
     // Every level is offered, N5 first.
     expect(find.text('N5'), findsOneWidget);
     expect(find.text('N1'), findsOneWidget);
@@ -87,17 +88,18 @@ void main() {
   });
 
   testWidgets('browses the deck via Prev/Next', (tester) async {
+    final n5 = (await container.read(wordsProvider.future)).length;
     await pumpWordScreen(tester);
 
-    expect(find.text('1 / 719'), findsOneWidget);
+    expect(find.text('1 / $n5'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 719'), findsOneWidget);
+    expect(find.text('2 / $n5'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Previous'));
     await tester.pumpAndSettle();
-    expect(find.text('1 / 719'), findsOneWidget);
+    expect(find.text('1 / $n5'), findsOneWidget);
   });
 
   testWidgets('Previous is disabled at the first word', (tester) async {
@@ -108,15 +110,18 @@ void main() {
 
   testWidgets('switching level swaps the deck and resets the position',
       (tester) async {
+    final n5 = (await container.read(wordsProvider.future)).length;
     await pumpApp(tester);
-    expect(find.text('OF 719'), findsOneWidget);
+    expect(find.text('OF $n5'), findsOneWidget);
 
     // Jump into the deck first, so the reset is observable.
-    container.read(currentWordIndexProvider.notifier).jumpTo(200, 719);
+    container.read(currentWordIndexProvider.notifier).jumpTo(200, n5);
     await tester.tap(find.text('N1'));
     await tester.pumpAndSettle();
 
-    expect(find.text('OF 2655'), findsOneWidget);
+    final n1 = (await container.read(wordsProvider.future)).length;
+    expect(find.text('OF $n1'), findsOneWidget);
+    expect(n1, greaterThan(n5));
     expect(container.read(currentWordIndexProvider), 0);
     expect(container.read(levelProvider), 1);
   });
@@ -129,7 +134,7 @@ void main() {
 
     await pumpWordScreen(tester);
 
-    expect(find.text('719 / 719'), findsOneWidget);
+    expect(find.text('${words.length} / ${words.length}'), findsOneWidget);
     expect(_iconButtonFor(tester, Icons.arrow_forward_ios).onPressed, isNull);
   });
 }

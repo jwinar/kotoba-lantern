@@ -15,9 +15,35 @@ class ProgressService {
   static const String _keySeen = 'progress.seen';
   static const String _keyLearned = 'progress.learned';
   static const String _keyFavorite = 'progress.favorite';
+  static const String _keySchema = 'progress.schema';
+
+  /// v1 keyed words by `{level}_{order}` - a position in a 150-word
+  /// hand-written deck. v2 keys them by `{level}_{headword}`. The two can't
+  /// be translated into each other (the deck v1 indexed no longer exists),
+  /// so the old entries are dropped on first read rather than left to sit
+  /// in storage forever, never matching anything and quietly counting
+  /// toward nothing.
+  static const int _schemaVersion = 2;
+
+  Future<SharedPreferences> _prefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getInt(_keySchema) != _schemaVersion) {
+      for (final key in [_keySeen, _keyLearned, _keyFavorite]) {
+        final ids = prefs.getStringList(key);
+        if (ids == null) continue;
+        // A v1 id is level_digits; anything else is already v2.
+        final kept = ids.where((id) => !RegExp(r'^\d+_\d+$').hasMatch(id)).toList();
+        if (kept.length != ids.length) {
+          await prefs.setStringList(key, kept);
+        }
+      }
+      await prefs.setInt(_keySchema, _schemaVersion);
+    }
+    return prefs;
+  }
 
   Future<Map<String, WordProgress>> loadAll() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     final seen = (prefs.getStringList(_keySeen) ?? const <String>[]).toSet();
     final learned = (prefs.getStringList(_keyLearned) ?? const <String>[]).toSet();
     final favorite = (prefs.getStringList(_keyFavorite) ?? const <String>[]).toSet();
@@ -44,14 +70,14 @@ class ProgressService {
   /// Clears every tracked flag. Offered from Settings; the caller is
   /// responsible for confirming with the user first.
   Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     await prefs.remove(_keySeen);
     await prefs.remove(_keyLearned);
     await prefs.remove(_keyFavorite);
   }
 
   Future<void> _setFlag(String key, String progressId, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     final ids = (prefs.getStringList(key) ?? const <String>[]).toSet();
     final changed = value ? ids.add(progressId) : ids.remove(progressId);
     if (!changed) return;

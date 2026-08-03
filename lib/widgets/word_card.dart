@@ -85,6 +85,12 @@ class HeroContent extends StatelessWidget {
 
   static const _heroSizes = {1: 190.0, 2: 132.0, 3: 96.0, 4: 74.0, 5: 62.0};
 
+  static double _glossSize(String english) {
+    if (english.length > 64) return 17;
+    if (english.length > 34) return 20;
+    return 24;
+  }
+
   @override
   Widget build(BuildContext context) {
     final charCount = word.japanese.runes.length;
@@ -146,10 +152,18 @@ class HeroContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        // Imported glosses are comma-joined synonym lists and run to 240
+        // characters at the extreme ("to pin down, to hold down, to press
+        // down, …"). Long ones step down a size and clamp to three lines:
+        // the leading synonyms carry the meaning, and the example sentence
+        // and pager underneath have to stay on screen.
         Text(
           word.english,
           textAlign: TextAlign.center,
-          style: displayFont(fontSize: 24, color: lantern.ink).copyWith(height: 1.15),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: displayFont(fontSize: _glossSize(word.english), color: lantern.ink)
+              .copyWith(height: 1.2),
         ),
         if (captionFor(word).isNotEmpty) ...[
           const SizedBox(height: 5),

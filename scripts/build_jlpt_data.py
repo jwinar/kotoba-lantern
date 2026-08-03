@@ -95,18 +95,41 @@ def normalize(expression: str, reading: str) -> tuple[str, str]:
     not a word anyone is learning.
     """
     def first_variant(value: str) -> str:
-        # Variants are separated by ";" in most rows and by the ideographic
-        # comma 、 in a handful (回る、回す).
-        for separator in (";", "、", "，"):
+        # Variants are separated by ";" in most rows, by the ideographic
+        # comma 、 in a handful (回る、回す), and by a plain comma in one.
+        for separator in (";", "、", "，", ","):
             value = value.split(separator)[0]
         return value.strip()
 
-    expression = first_variant(expression)
-    reading = first_variant(reading)
-    if "(" in reading:
-        head, _, rest = reading.partition("(")
-        _, _, tail = rest.partition(")")
-        reading = (head + tail).strip()
+    def strip_parentheticals(value: str) -> str:
+        """Parentheses mean three different things in these lists:
+
+          しまった (かん)      a word-class marker → drop
+          スーパー (マーケット) an optional longer form → drop, the word is スーパー
+          ～(に) ついて        an inline particle → keep the content, drop the
+                              brackets, so the headword reads ～について
+          (花を〜) 生ける      a usage note before the word → drop
+
+        A trailing or leading group is a note about the word; a group in the
+        middle is part of it.
+        """
+        value = value.replace("（", "(").replace("）", ")")
+        while "(" in value and ")" in value:
+            start = value.index("(")
+            end = value.index(")", start)
+            inner = value[start + 1 : end]
+            leading = value[:start].strip()
+            trailing = value[end + 1 :].strip()
+            if not leading or not trailing:
+                # A note hanging off one end - drop the whole group.
+                value = (leading + " " + trailing).strip()
+            else:
+                # Bracketed material between two halves of the word itself.
+                value = f"{leading}{inner}{trailing}"
+        return " ".join(value.split())
+
+    expression = strip_parentheticals(first_variant(expression))
+    reading = strip_parentheticals(first_variant(reading))
     reading = " ".join(reading.split())
     # A few rows have the two columns the wrong way round (expression
     # いただく, reading 頂く). Detect it by which side is kana rather than

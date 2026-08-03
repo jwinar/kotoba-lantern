@@ -626,7 +626,13 @@ class _LevelSelector extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => onSelect(level),
-                child: AnimatedContainer(
+                // The pill itself is ~30pt tall; the tap target around it is
+                // padded out to iOS's 44pt minimum, so switching levels
+                // isn't a game of precision.
+                child: Container(
+                  height: 44,
+                  alignment: Alignment.center,
+                  child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOut,
                   padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
@@ -651,6 +657,7 @@ class _LevelSelector extends StatelessWidget {
                           ? lantern.heroPanelBottom
                           : lantern.heroText.withValues(alpha: 0.65),
                     ),
+                  ),
                   ),
                 ),
               ),
