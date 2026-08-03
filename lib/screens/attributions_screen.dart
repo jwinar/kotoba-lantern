@@ -28,6 +28,15 @@ class AttributionsScreen extends StatelessWidget {
           'sentence rather than an automatically matched approximation.',
     ),
     (
+      'Word class',
+      'Verb classes (godan, ichidan, irregular) are derived from the '
+          'dictionary form rather than taken from a dictionary: a gloss '
+          'beginning "to" marks a verb, and the ending decides the class. '
+          'Adjectives carry no class unless it was written by hand - i- and '
+          'na-adjectives look alike in English, and guessing would teach the '
+          'wrong conjugation.',
+    ),
+    (
       'Type',
       'Zen Kaku Gothic New, by Yoshimichi Ohira, served via the google_fonts '
           'package and licensed under the SIL Open Font License 1.1. It carries '

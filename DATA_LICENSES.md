@@ -43,6 +43,19 @@ under the same terms.
 Hand-written for this app (150 sentences, one per curated N5 word), kept in
 `scripts/curated_n5.json`. No third-party rights; same license as the app.
 
+## Word class — derived, not sourced
+
+The lists carry no part of speech. `infer_part_of_speech` in the generator
+adds one for verbs only, and only where the dictionary form proves it: a
+gloss beginning "to " marks a verb, anything not ending in る is then
+unambiguously godan, and る-verbs use the i/e-row vowel rule plus an explicit
+list of common godan exceptions (帰る, 走る, 知る …). Adjectives are left
+alone on purpose — i- and na-adjectives read identically in English, and
+嫌い/きれい end in い while conjugating as na-adjectives.
+
+This is our own derivation, not third-party data, and carries no additional
+licence obligation.
+
 ## What this means in practice
 
 - Keep the attributions screen accurate if the sources change.

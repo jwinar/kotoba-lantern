@@ -24,10 +24,15 @@ what was carried over and what was replaced.</sub>
 - **Example sentences** for the 150 core N5 words, with an all-kana reading
   and a translation, each speakable on its own. Words without one show no
   sentence rather than an automatically matched approximation.
+- **Word class** for 1406 words — godan / ichidan / irregular verbs, and the
+  hand-written classes on the core N5 set. Inferred only where it's provable
+  (see `infer_part_of_speech`); never guessed for adjectives.
 - **Smart Shuffle** — weighted-random "Next" that favors words you haven't
   learned and haven't just seen. Favoriting a word keeps it in rotation even
   after you mark it learned.
-- **Word list** — the whole deck, with learned/favorite/speak on each row.
+- **Searchable word list** — search by kanji, kana, romaji or meaning, and
+  filter to what you haven't learned, what you have, or your favorites.
+  Learned/favorite/speak sit on every row.
 - **Night and day themes.** Dark-first — the lantern needs a night to glow
   against; the light theme is the same lantern seen by daylight, not an
   inversion. Progress, favorites and streaks are stored on-device.
