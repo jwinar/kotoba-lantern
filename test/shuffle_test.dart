@@ -44,7 +44,14 @@ void main() {
     test('a single-word list always returns index 0', () {
       final words = _words(1);
       for (var i = 0; i < 10; i++) {
-        expect(pickWeightedRandomIndex(words: words, progress: const {}, recentIndices: const []), 0);
+        expect(
+          pickWeightedRandomIndex(
+            words: words,
+            progress: const {},
+            recentIndices: const [],
+          ),
+          0,
+        );
       }
     });
 
@@ -69,12 +76,17 @@ void main() {
         words,
         // The first five are learned, the rest are not.
         progress: {
-          for (final word in words.take(5)) word.id: const WordProgress(learned: true),
+          for (final word in words.take(5))
+            word.id: const WordProgress(learned: true),
         },
         recentIndices: const [],
       );
-      final learned = counts.entries.take(5).fold<int>(0, (sum, e) => sum + e.value);
-      final unlearned = counts.entries.skip(5).fold<int>(0, (sum, e) => sum + e.value);
+      final learned = counts.entries
+          .take(5)
+          .fold<int>(0, (sum, e) => sum + e.value);
+      final unlearned = counts.entries
+          .skip(5)
+          .fold<int>(0, (sum, e) => sum + e.value);
       expect(learned, lessThan(unlearned ~/ 2));
     });
 
@@ -106,8 +118,15 @@ void main() {
 
     test('the current word is rarely repeated', () {
       final words = _words(10);
-      final counts = _tally(words, progress: const {}, recentIndices: const [], excludeIndex: 4);
-      final others = counts.entries.where((e) => e.key != '語4').map((e) => e.value);
+      final counts = _tally(
+        words,
+        progress: const {},
+        recentIndices: const [],
+        excludeIndex: 4,
+      );
+      final others = counts.entries
+          .where((e) => e.key != '語4')
+          .map((e) => e.value);
       expect(counts['語4'], lessThan(others.reduce(min) ~/ 2));
     });
   });

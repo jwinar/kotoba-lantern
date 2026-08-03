@@ -190,12 +190,13 @@ TextStyle jpFont({
 
 /// Small tracked-out label ("OF 150", "EXAMPLE SENTENCE"). The one place
 /// the type system leans on letter-spacing rather than weight.
-TextStyle labelFont({double? fontSize, Color? color, FontWeight? fontWeight}) => _zen(
-  fontSize: fontSize,
-  fontWeight: fontWeight ?? FontWeight.w600,
-  color: color,
-  letterSpacing: 1.4,
-);
+TextStyle labelFont({double? fontSize, Color? color, FontWeight? fontWeight}) =>
+    _zen(
+      fontSize: fontSize,
+      fontWeight: fontWeight ?? FontWeight.w600,
+      color: color,
+      letterSpacing: 1.4,
+    );
 
 /// Formats an integer with thousands separators (`10057` → `10,057`).
 /// Small enough not to warrant pulling in `intl` for.

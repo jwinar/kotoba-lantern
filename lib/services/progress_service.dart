@@ -32,7 +32,9 @@ class ProgressService {
         final ids = prefs.getStringList(key);
         if (ids == null) continue;
         // A v1 id is level_digits; anything else is already v2.
-        final kept = ids.where((id) => !RegExp(r'^\d+_\d+$').hasMatch(id)).toList();
+        final kept = ids
+            .where((id) => !RegExp(r'^\d+_\d+$').hasMatch(id))
+            .toList();
         if (kept.length != ids.length) {
           await prefs.setStringList(key, kept);
         }
@@ -45,8 +47,10 @@ class ProgressService {
   Future<Map<String, WordProgress>> loadAll() async {
     final prefs = await _prefs();
     final seen = (prefs.getStringList(_keySeen) ?? const <String>[]).toSet();
-    final learned = (prefs.getStringList(_keyLearned) ?? const <String>[]).toSet();
-    final favorite = (prefs.getStringList(_keyFavorite) ?? const <String>[]).toSet();
+    final learned = (prefs.getStringList(_keyLearned) ?? const <String>[])
+        .toSet();
+    final favorite = (prefs.getStringList(_keyFavorite) ?? const <String>[])
+        .toSet();
 
     final progress = <String, WordProgress>{};
     for (final id in {...seen, ...learned, ...favorite}) {

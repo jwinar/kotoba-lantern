@@ -42,9 +42,9 @@ class SettingsScreen extends ConsumerWidget {
     await ref.read(wordProgressProvider.notifier).clear();
     await ref.read(viewHistoryServiceProvider).clear();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Progress reset.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Progress reset.')));
   }
 
   @override
@@ -62,22 +62,29 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Word list'),
             subtitle: Text(
               wordsAsync.maybeWhen(
-                data: (words) => 'Browse all ${words.length} JLPT ${levelLabel(level)} words',
+                data: (words) =>
+                    'Browse all ${words.length} JLPT ${levelLabel(level)} words',
                 orElse: () => 'Browse the JLPT ${levelLabel(level)} deck',
               ),
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: wordsAsync.maybeWhen(
-              data: (words) => () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => WordListScreen(words: words)),
-              ),
+              data: (words) =>
+                  () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WordListScreen(words: words),
+                    ),
+                  ),
               orElse: () => null,
             ),
           ),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-            child: Text('Appearance', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Appearance',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -115,9 +122,14 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(height: 1),
           ListTile(
-            leading: Icon(Icons.restart_alt, color: Theme.of(context).colorScheme.error),
+            leading: Icon(
+              Icons.restart_alt,
+              color: Theme.of(context).colorScheme.error,
+            ),
             title: const Text('Reset progress'),
-            subtitle: const Text('Clears learned, favorites, the ring and the streak'),
+            subtitle: const Text(
+              'Clears learned, favorites, the ring and the streak',
+            ),
             onTap: () => _resetProgress(context, ref),
           ),
         ],

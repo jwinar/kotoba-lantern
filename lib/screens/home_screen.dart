@@ -65,7 +65,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (jumpToIndex != null) {
       final words = await ref.read(wordsProvider.future);
       if (!mounted) return;
-      ref.read(currentWordIndexProvider.notifier).jumpTo(jumpToIndex, words.length);
+      ref
+          .read(currentWordIndexProvider.notifier)
+          .jumpTo(jumpToIndex, words.length);
     }
     if (!mounted) return;
     await Navigator.of(context).push(
@@ -75,9 +77,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _openWordList(List<JapaneseWord> words) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => WordListScreen(words: words)),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => WordListScreen(words: words)));
     _reloadHistory();
   }
 
@@ -92,7 +94,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// [globalIndices]/[totalWordCount] through to [WordListScreen] so
   /// tapping a row opens the *actual* word tapped and Prev/Next from there
   /// pages the real deck rather than this short subset.
-  Future<void> _openRecentlyViewed(List<JapaneseWord> words, List<int> recentIndices) async {
+  Future<void> _openRecentlyViewed(
+    List<JapaneseWord> words,
+    List<int> recentIndices,
+  ) async {
     final validIndices = recentIndices.toList();
     final recentWords = [for (final i in validIndices) words[i]];
     await Navigator.of(context).push(
@@ -109,9 +114,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
     // Settings can reset progress, which puts the lantern out.
     _reloadHistory();
   }
@@ -127,7 +132,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         bottom: false,
         child: wordsAsync.when(
-          loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
+          loading: () =>
+              Center(child: CircularProgressIndicator(color: lantern.accent)),
           error: (err, stack) => DeckLoadFailure(lantern: lantern, error: err),
           data: (words) => FutureBuilder<ViewHistorySnapshot>(
             future: _historyFuture,
@@ -235,7 +241,10 @@ class _HeroSection extends StatelessWidget {
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: LanternGlowPainter(color: accent, intensity: 0.25 + 0.75 * lit),
+                  painter: LanternGlowPainter(
+                    color: accent,
+                    intensity: 0.25 + 0.75 * lit,
+                  ),
                 ),
               ),
             ),
@@ -256,7 +265,10 @@ class _HeroSection extends StatelessWidget {
                             const SizedBox(height: 3),
                             Text(
                               'Kotoba Lantern',
-                              style: displayFont(fontSize: 21, color: lantern.heroText),
+                              style: displayFont(
+                                fontSize: 21,
+                                color: lantern.heroText,
+                              ),
                             ),
                             Text(
                               '日本語 · JLPT ${levelLabel(level)}',
@@ -270,7 +282,10 @@ class _HeroSection extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.settings_outlined, color: lantern.heroText),
+                        icon: Icon(
+                          Icons.settings_outlined,
+                          color: lantern.heroText,
+                        ),
                         tooltip: 'Settings',
                         onPressed: onSettingsTap,
                       ),
@@ -307,7 +322,13 @@ class _HeroSection extends StatelessWidget {
                           duration: const Duration(milliseconds: 1100),
                           curve: Curves.easeOutCubic,
                           builder: (context, value, child) {
-                            return CustomPaint(painter: LanternPainter(lit: value, light: accent), child: child);
+                            return CustomPaint(
+                              painter: LanternPainter(
+                                lit: value,
+                                light: accent,
+                              ),
+                              child: child,
+                            );
                           },
                           child: Center(
                             child: Column(
@@ -315,11 +336,19 @@ class _HeroSection extends StatelessWidget {
                               children: [
                                 Text(
                                   '$viewedCount',
-                                  style: displayFont(fontSize: 46, color: lantern.heroText),
+                                  style: displayFont(
+                                    fontSize: 46,
+                                    color: lantern.heroText,
+                                  ),
                                 ),
                                 Text(
                                   'OF $total',
-                                  style: labelFont(fontSize: 10.5, color: lantern.heroText.withValues(alpha: 0.8)),
+                                  style: labelFont(
+                                    fontSize: 10.5,
+                                    color: lantern.heroText.withValues(
+                                      alpha: 0.8,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -336,22 +365,38 @@ class _HeroSection extends StatelessWidget {
                       // words still dark" is just a fact about the lantern.
                       '$percentLit% lit — $stillDark words still dark',
                       textAlign: TextAlign.center,
-                      style: bodyFont(fontSize: 12.5, color: lantern.heroText.withValues(alpha: 0.7)),
+                      style: bodyFont(
+                        fontSize: 12.5,
+                        color: lantern.heroText.withValues(alpha: 0.7),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Center(
                     child: OutlinedButton.icon(
                       onPressed: onOpenLibrary,
-                      icon: Icon(Icons.menu_book_outlined, size: 16, color: accent),
+                      icon: Icon(
+                        Icons.menu_book_outlined,
+                        size: 16,
+                        color: accent,
+                      ),
                       label: Text(
                         'Library',
-                        style: bodyFont(fontSize: 13, fontWeight: FontWeight.w600, color: accent),
+                        style: bodyFont(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: accent.withValues(alpha: 0.7)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 9,
+                        ),
                       ),
                     ),
                   ),
@@ -389,7 +434,11 @@ class _BrandSeal extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '語',
-        style: jpFont(fontSize: 21, fontWeight: FontWeight.w700, color: lantern.heroPanelBottom),
+        style: jpFont(
+          fontSize: 21,
+          fontWeight: FontWeight.w700,
+          color: lantern.heroPanelBottom,
+        ),
       ),
     );
   }
@@ -422,7 +471,14 @@ class _StreakSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('This week', style: bodyFont(fontSize: 15, fontWeight: FontWeight.w600, color: lantern.ink)),
+              Text(
+                'This week',
+                style: bodyFont(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: lantern.ink,
+                ),
+              ),
               Text(
                 streak == 1 ? '1-day streak' : '$streak-day streak',
                 style: bodyFont(fontSize: 13, color: lantern.accent),
@@ -432,7 +488,9 @@ class _StreakSection extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: List.generate(7, (i) {
-              final active = activeDateKeys.contains(ViewHistoryService.dateKey(weekDays[i]));
+              final active = activeDateKeys.contains(
+                ViewHistoryService.dateKey(weekDays[i]),
+              );
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: i == 6 ? 0 : 8),
@@ -448,11 +506,18 @@ class _StreakSection extends StatelessWidget {
                             // lamps rather than four shapes and three gaps.
                             color: active ? lantern.accent : Colors.transparent,
                             shape: BoxShape.circle,
-                            border: active ? null : Border.all(color: lantern.hairline, width: 1.2),
+                            border: active
+                                ? null
+                                : Border.all(
+                                    color: lantern.hairline,
+                                    width: 1.2,
+                                  ),
                             boxShadow: active
                                 ? [
                                     BoxShadow(
-                                      color: lantern.accent.withValues(alpha: 0.4),
+                                      color: lantern.accent.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       blurRadius: 12,
                                     ),
                                   ]
@@ -505,8 +570,10 @@ class _RecentlyViewedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final validIndices =
-        recentIndices.where((i) => i >= 0 && i < words.length).take(6).toList();
+    final validIndices = recentIndices
+        .where((i) => i >= 0 && i < words.length)
+        .take(6)
+        .toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 26, 20, 0),
@@ -518,11 +585,18 @@ class _RecentlyViewedSection extends StatelessWidget {
             children: [
               Text(
                 'Recently viewed',
-                style: bodyFont(fontSize: 15, fontWeight: FontWeight.w600, color: lantern.ink),
+                style: bodyFont(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: lantern.ink,
+                ),
               ),
               GestureDetector(
                 onTap: onSeeAll,
-                child: Text('See all', style: bodyFont(fontSize: 13, color: lantern.accent)),
+                child: Text(
+                  'See all',
+                  style: bodyFont(fontSize: 13, color: lantern.accent),
+                ),
               ),
             ],
           ),
@@ -551,7 +625,11 @@ class _RecentlyViewedSection extends StatelessWidget {
                             width: 72,
                             child: Text(
                               word.japanese,
-                              style: jpFont(fontSize: 22, fontWeight: FontWeight.w500, color: lantern.ink),
+                              style: jpFont(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: lantern.ink,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -571,7 +649,10 @@ class _RecentlyViewedSection extends StatelessWidget {
                                 ),
                                 Text(
                                   word.english,
-                                  style: bodyFont(fontSize: 13, color: lantern.subText),
+                                  style: bodyFont(
+                                    fontSize: 13,
+                                    color: lantern.subText,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -633,31 +714,39 @@ class _LevelSelector extends StatelessWidget {
                   height: 44,
                   alignment: Alignment.center,
                   child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: level == selected ? accent : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: level == selected
-                          ? accent
-                          : lantern.heroText.withValues(alpha: 0.22),
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 6,
                     ),
-                    boxShadow: level == selected
-                        ? [BoxShadow(color: accent.withValues(alpha: 0.4), blurRadius: 14)]
-                        : null,
-                  ),
-                  child: Text(
-                    levelLabel(level),
-                    style: bodyFont(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: level == selected
-                          ? lantern.heroPanelBottom
-                          : lantern.heroText.withValues(alpha: 0.65),
+                    decoration: BoxDecoration(
+                      color: level == selected ? accent : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: level == selected
+                            ? accent
+                            : lantern.heroText.withValues(alpha: 0.22),
+                      ),
+                      boxShadow: level == selected
+                          ? [
+                              BoxShadow(
+                                color: accent.withValues(alpha: 0.4),
+                                blurRadius: 14,
+                              ),
+                            ]
+                          : null,
                     ),
-                  ),
+                    child: Text(
+                      levelLabel(level),
+                      style: bodyFont(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: level == selected
+                            ? lantern.heroPanelBottom
+                            : lantern.heroText.withValues(alpha: 0.65),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -668,7 +757,6 @@ class _LevelSelector extends StatelessWidget {
   }
 }
 
-
 /// Shown when a level's asset can't be read. This is a bundled file, so it
 /// failing means a broken install rather than anything the user did or a
 /// network they can fix - the message says so instead of showing a stack
@@ -678,7 +766,11 @@ class DeckLoadFailure extends ConsumerWidget {
   final LanternColors lantern;
   final Object error;
 
-  const DeckLoadFailure({super.key, required this.lantern, required this.error});
+  const DeckLoadFailure({
+    super.key,
+    required this.lantern,
+    required this.error,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -710,7 +802,11 @@ class DeckLoadFailure extends ConsumerWidget {
               ),
               child: Text(
                 'Try again',
-                style: bodyFont(fontSize: 13, fontWeight: FontWeight.w600, color: lantern.accent),
+                style: bodyFont(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: lantern.accent,
+                ),
               ),
             ),
           ],

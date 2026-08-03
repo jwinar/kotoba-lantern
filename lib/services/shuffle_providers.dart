@@ -11,7 +11,9 @@ class ShuffleModeNotifier extends Notifier<bool> {
   void toggle() => state = !state;
 }
 
-final shuffleModeProvider = NotifierProvider<ShuffleModeNotifier, bool>(ShuffleModeNotifier.new);
+final shuffleModeProvider = NotifierProvider<ShuffleModeNotifier, bool>(
+  ShuffleModeNotifier.new,
+);
 
 /// Back-stack of word indices visited while shuffling, so Previous can
 /// step back through what Smart Shuffle actually showed instead of
@@ -35,6 +37,7 @@ class ShuffleHistoryNotifier extends Notifier<List<int>> {
   void clear() => state = const [];
 }
 
-final shuffleHistoryProvider = NotifierProvider<ShuffleHistoryNotifier, List<int>>(
-  ShuffleHistoryNotifier.new,
-);
+final shuffleHistoryProvider =
+    NotifierProvider<ShuffleHistoryNotifier, List<int>>(
+      ShuffleHistoryNotifier.new,
+    );

@@ -120,7 +120,11 @@ class HeroContent extends StatelessWidget {
               ),
               Text(
                 word.japanese,
-                style: jpFont(fontSize: heroSize, fontWeight: FontWeight.w500, color: lantern.ink),
+                style: jpFont(
+                  fontSize: heroSize,
+                  fontWeight: FontWeight.w500,
+                  color: lantern.ink,
+                ),
                 maxLines: 1,
                 softWrap: false,
               ),
@@ -136,7 +140,11 @@ class HeroContent extends StatelessWidget {
           fit: BoxFit.scaleDown,
           child: Text(
             word.kana,
-            style: jpFont(fontSize: 25, fontWeight: FontWeight.w600, color: lantern.accent),
+            style: jpFont(
+              fontSize: 25,
+              fontWeight: FontWeight.w600,
+              color: lantern.accent,
+            ),
             maxLines: 1,
             softWrap: false,
           ),
@@ -162,8 +170,10 @@ class HeroContent extends StatelessWidget {
           textAlign: TextAlign.center,
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
-          style: displayFont(fontSize: _glossSize(word.english), color: lantern.ink)
-              .copyWith(height: 1.2),
+          style: displayFont(
+            fontSize: _glossSize(word.english),
+            color: lantern.ink,
+          ).copyWith(height: 1.2),
         ),
         if (captionFor(word).isNotEmpty) ...[
           const SizedBox(height: 5),
@@ -260,7 +270,8 @@ class BreathingEcho extends StatefulWidget {
   State<BreathingEcho> createState() => _BreathingEchoState();
 }
 
-class _BreathingEchoState extends State<BreathingEcho> with SingleTickerProviderStateMixin {
+class _BreathingEchoState extends State<BreathingEcho>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final bool _reducedMotion;
 
@@ -272,8 +283,15 @@ class _BreathingEchoState extends State<BreathingEcho> with SingleTickerProvider
     // until idle" logic (tests, but conceivably other tooling) would hang
     // forever if .repeat() started regardless and build() merely chose not
     // to display it.
-    _reducedMotion = WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations;
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 6));
+    _reducedMotion = WidgetsBinding
+        .instance
+        .platformDispatcher
+        .accessibilityFeatures
+        .disableAnimations;
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    );
     if (!_reducedMotion) {
       _controller.repeat(reverse: true);
     }
@@ -289,7 +307,11 @@ class _BreathingEchoState extends State<BreathingEcho> with SingleTickerProvider
   Widget build(BuildContext context) {
     final glyph = Text(
       widget.text,
-      style: jpFont(fontSize: widget.fontSize, fontWeight: FontWeight.w700, color: widget.color),
+      style: jpFont(
+        fontSize: widget.fontSize,
+        fontWeight: FontWeight.w700,
+        color: widget.color,
+      ),
       maxLines: 1,
       softWrap: false,
     );
@@ -304,7 +326,8 @@ class _BreathingEchoState extends State<BreathingEcho> with SingleTickerProvider
       builder: (context, child) {
         final t = Curves.easeInOut.transform(_controller.value);
         final scale = 1.0 + 0.05 * t;
-        final opacity = widget.opacityLow + (widget.opacityHigh - widget.opacityLow) * t;
+        final opacity =
+            widget.opacityLow + (widget.opacityHigh - widget.opacityLow) * t;
         return Opacity(
           opacity: opacity,
           child: Transform.translate(
@@ -332,19 +355,22 @@ class LevelRail extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: lantern.accent.withValues(alpha: 0.7), width: 1.4),
+        border: Border.all(
+          color: lantern.accent.withValues(alpha: 0.7),
+          width: 1.4,
+        ),
         color: lantern.accent.withValues(alpha: 0.06),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'N',
-            style: labelFont(fontSize: 12, color: lantern.accent),
-          ),
+          Text('N', style: labelFont(fontSize: 12, color: lantern.accent)),
           Text(
             '$level',
-            style: displayFont(fontSize: 20, color: lantern.accent).copyWith(height: 1.05),
+            style: displayFont(
+              fontSize: 20,
+              color: lantern.accent,
+            ).copyWith(height: 1.05),
           ),
         ],
       ),
@@ -398,7 +424,11 @@ class CircleGlyphButton extends StatelessWidget {
           child: SizedBox(
             width: diameter,
             height: diameter,
-            child: Icon(icon, size: iconSize, color: active ? (activeIconColor ?? Colors.white) : color),
+            child: Icon(
+              icon,
+              size: iconSize,
+              color: active ? (activeIconColor ?? Colors.white) : color,
+            ),
           ),
         ),
       ),
@@ -429,7 +459,10 @@ class ExampleCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 13, 13, 13),
       decoration: BoxDecoration(
-        border: Border.all(color: lantern.accent.withValues(alpha: 0.55), width: 1.4),
+        border: Border.all(
+          color: lantern.accent.withValues(alpha: 0.55),
+          width: 1.4,
+        ),
         borderRadius: BorderRadius.circular(16),
         color: lantern.accent.withValues(alpha: motif.exampleBoxOpacity),
       ),
@@ -440,11 +473,18 @@ class ExampleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('EXAMPLE SENTENCE', style: labelFont(fontSize: 9.5, color: lantern.accent)),
+                Text(
+                  'EXAMPLE SENTENCE',
+                  style: labelFont(fontSize: 9.5, color: lantern.accent),
+                ),
                 const SizedBox(height: 5),
                 Text(
                   word.exampleSentence!,
-                  style: jpFont(fontSize: 18, fontWeight: FontWeight.w500, color: lantern.ink),
+                  style: jpFont(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: lantern.ink,
+                  ),
                 ),
                 if (word.exampleSentenceKana != null) ...[
                   const SizedBox(height: 2),
@@ -462,7 +502,12 @@ class ExampleCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          CircleGlyphButton(diameter: 32, iconSize: 14, color: lantern.accent, onTap: onSpeak),
+          CircleGlyphButton(
+            diameter: 32,
+            iconSize: 14,
+            color: lantern.accent,
+            onTap: onSpeak,
+          ),
         ],
       ),
     );
@@ -498,7 +543,11 @@ class Pager extends StatelessWidget {
         ),
         Text(
           '${index + 1} / $total',
-          style: labelFont(fontSize: 12, color: lantern.subText, fontWeight: FontWeight.w500),
+          style: labelFont(
+            fontSize: 12,
+            color: lantern.subText,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         IconButton(
           icon: Icon(Icons.arrow_forward_ios, size: 18, color: lantern.subText),

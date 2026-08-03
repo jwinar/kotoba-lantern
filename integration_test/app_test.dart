@@ -31,8 +31,9 @@ Future<void> pumpUntilFound(
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('launches, opens the study card, pages through the deck',
-      (tester) async {
+  testWidgets('launches, opens the study card, pages through the deck', (
+    tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: KotobaLanternApp()));
 
     // The deck loads off the bundle before the lantern knows its total.

@@ -59,19 +59,21 @@ void main() {
     expect(progress[_word.id]!.seen, isTrue);
   });
 
-  test('v1 position-keyed entries are dropped, v2 word-keyed ones survive',
-      () async {
-    // v1 wrote "{level}_{order}" against a deck that no longer exists.
-    SharedPreferences.setMockInitialValues({
-      'progress.learned': <String>['5_12', '5_34', '5_水'],
-      'progress.favorite': <String>['5_7'],
-    });
+  test(
+    'v1 position-keyed entries are dropped, v2 word-keyed ones survive',
+    () async {
+      // v1 wrote "{level}_{order}" against a deck that no longer exists.
+      SharedPreferences.setMockInitialValues({
+        'progress.learned': <String>['5_12', '5_34', '5_水'],
+        'progress.favorite': <String>['5_7'],
+      });
 
-    final progress = await ProgressService().loadAll();
+      final progress = await ProgressService().loadAll();
 
-    expect(progress.keys, ['5_水']);
-    expect(progress['5_水']!.learned, isTrue);
-  });
+      expect(progress.keys, ['5_水']);
+      expect(progress['5_水']!.learned, isTrue);
+    },
+  );
 
   test('clear removes every tracked flag', () async {
     final service = ProgressService();

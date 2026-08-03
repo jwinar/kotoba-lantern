@@ -31,7 +31,11 @@ void main() {
       final words = await repository.loadLevel(level);
       final ids = words.map((w) => w.id).toSet();
       expect(ids.length, words.length, reason: 'duplicate id inside N$level');
-      expect(allIds.intersection(ids), isEmpty, reason: 'id collision across levels');
+      expect(
+        allIds.intersection(ids),
+        isEmpty,
+        reason: 'id collision across levels',
+      );
       allIds.addAll(ids);
     }
     expect(allIds.length, greaterThan(7000));
@@ -41,9 +45,21 @@ void main() {
     for (final level in jlptLevels) {
       final words = await JlptRepository().loadLevel(level);
       for (final word in words) {
-        expect(word.kana, isNotEmpty, reason: '${word.japanese} has no reading');
-        expect(word.romaji, isNotEmpty, reason: '${word.japanese} has no romaji');
-        expect(word.english, isNotEmpty, reason: '${word.japanese} has no gloss');
+        expect(
+          word.kana,
+          isNotEmpty,
+          reason: '${word.japanese} has no reading',
+        );
+        expect(
+          word.romaji,
+          isNotEmpty,
+          reason: '${word.japanese} has no romaji',
+        );
+        expect(
+          word.english,
+          isNotEmpty,
+          reason: '${word.japanese} has no gloss',
+        );
       }
     }
   });
@@ -63,7 +79,9 @@ void main() {
 
   test('the hand-written example sentences survive into the deck', () async {
     final words = await JlptRepository().loadLevel(5);
-    final withSentences = words.where((w) => w.exampleSentence != null).toList();
+    final withSentences = words
+        .where((w) => w.exampleSentence != null)
+        .toList();
 
     expect(withSentences.length, greaterThanOrEqualTo(140));
     final watashi = words.firstWhere((w) => w.japanese == '私');

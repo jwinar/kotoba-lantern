@@ -15,12 +15,12 @@ void main() {
     japaneseAvailable = true;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
-      calls.add(call);
-      // The service asks whether Japanese exists before speaking; the real
-      // plugin answers this one with a bool.
-      if (call.method == 'isLanguageAvailable') return japaneseAvailable;
-      return null;
-    });
+          calls.add(call);
+          // The service asks whether Japanese exists before speaking; the real
+          // plugin answers this one with a bool.
+          if (call.method == 'isLanguageAvailable') return japaneseAvailable;
+          return null;
+        });
   });
 
   tearDown(() {
@@ -33,8 +33,12 @@ void main() {
 
     await service.speak('水');
 
-    expect(calls.map((c) => c.method),
-        ['isLanguageAvailable', 'setLanguage', 'stop', 'speak']);
+    expect(calls.map((c) => c.method), [
+      'isLanguageAvailable',
+      'setLanguage',
+      'stop',
+      'speak',
+    ]);
     expect(calls[1].arguments, 'ja-JP');
     expect(calls[3].arguments, '水');
   });
@@ -50,12 +54,14 @@ void main() {
     expect(calls[1].arguments, '山');
   });
 
-  test('a device with no Japanese voice reports it instead of staying silent',
-      () async {
-    japaneseAvailable = false;
-    final service = TtsService(flutterTts: FlutterTts());
+  test(
+    'a device with no Japanese voice reports it instead of staying silent',
+    () async {
+      japaneseAvailable = false;
+      final service = TtsService(flutterTts: FlutterTts());
 
-    expect(await service.speak('水'), SpeakResult.noJapaneseVoice);
-    expect(calls.map((c) => c.method), ['isLanguageAvailable']);
-  });
+      expect(await service.speak('水'), SpeakResult.noJapaneseVoice);
+      expect(calls.map((c) => c.method), ['isLanguageAvailable']);
+    },
+  );
 }

@@ -50,7 +50,9 @@ void main() {
     // it never stops scheduling frames - pumpAndSettle would hang forever
     // waiting for it to settle. Exercise the same reduced-motion path real
     // users can enable, which holds the echo at its resting opacity.
-    TestWidgetsFlutterBinding.instance.platformDispatcher
+    TestWidgetsFlutterBinding
+        .instance
+        .platformDispatcher
         .accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
       disableAnimations: true,
     );
@@ -77,8 +79,9 @@ void main() {
     expect(find.text('N1'), findsOneWidget);
   });
 
-  testWidgets('the study card shows the word, its reading and its example',
-      (tester) async {
+  testWidgets('the study card shows the word, its reading and its example', (
+    tester,
+  ) async {
     await pumpWordScreen(tester);
 
     // N5's first word by list order.
@@ -108,8 +111,9 @@ void main() {
     expect(_iconButtonFor(tester, Icons.arrow_back_ios).onPressed, isNull);
   });
 
-  testWidgets('switching level swaps the deck and resets the position',
-      (tester) async {
+  testWidgets('switching level swaps the deck and resets the position', (
+    tester,
+  ) async {
     final n5 = (await container.read(wordsProvider.future)).length;
     await pumpApp(tester);
     expect(find.text('OF $n5'), findsOneWidget);

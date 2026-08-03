@@ -42,7 +42,11 @@ class WordScreen extends ConsumerWidget {
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: lantern.ink.withValues(alpha: 0.7)),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: lantern.ink.withValues(alpha: 0.7),
+          ),
           tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
         ),
@@ -54,7 +58,9 @@ class WordScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(
               Icons.shuffle,
-              color: shuffleMode ? lantern.accent : lantern.ink.withValues(alpha: 0.6),
+              color: shuffleMode
+                  ? lantern.accent
+                  : lantern.ink.withValues(alpha: 0.6),
             ),
             tooltip: shuffleMode ? 'Smart shuffle on' : 'Smart shuffle',
             onPressed: () {
@@ -66,23 +72,30 @@ class WordScreen extends ConsumerWidget {
             icon: Icon(Icons.list, color: lantern.ink.withValues(alpha: 0.6)),
             tooltip: 'Word list',
             onPressed: wordsAsync.maybeWhen(
-              data: (words) => () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => WordListScreen(words: words)),
-              ),
+              data: (words) =>
+                  () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WordListScreen(words: words),
+                    ),
+                  ),
               orElse: () => null,
             ),
           ),
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: lantern.ink.withValues(alpha: 0.6)),
-            tooltip: 'Settings',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            icon: Icon(
+              Icons.settings_outlined,
+              color: lantern.ink.withValues(alpha: 0.6),
             ),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
       body: wordsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: lantern.accent)),
         error: (err, stack) => DeckLoadFailure(lantern: lantern, error: err),
         data: (words) => _WordBrowser(words: words, lantern: lantern),
       ),
@@ -130,12 +143,15 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final motif = isDark ? CardMotif.dark : CardMotif.light;
 
-    final index = ref.watch(currentWordIndexProvider).clamp(0, words.length - 1);
+    final index = ref
+        .watch(currentWordIndexProvider)
+        .clamp(0, words.length - 1);
     final word = words[index];
     final notifier = ref.read(currentWordIndexProvider.notifier);
     _recordView(index, word);
 
-    final progressMap = ref.watch(wordProgressProvider).value ?? const <String, WordProgress>{};
+    final progressMap =
+        ref.watch(wordProgressProvider).value ?? const <String, WordProgress>{};
     final progress = progressMap[word.id] ?? WordProgress.empty;
     final progressNotifier = ref.read(wordProgressProvider.notifier);
 
@@ -150,23 +166,29 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
       // History stores ids; the weighting works in positions, so resolve
       // against the deck actually loaded. Ids for words no longer in the
       // deck drop out rather than shifting everything after them.
-      final positionOf = {for (var i = 0; i < words.length; i++) words[i].id: i};
+      final positionOf = {
+        for (var i = 0; i < words.length; i++) words[i].id: i,
+      };
       final recentIndices = [
         for (final id in recentIds)
           if (positionOf[id] != null) positionOf[id]!,
       ];
       ref.read(shuffleHistoryProvider.notifier).push(index);
-      ref.read(currentWordIndexProvider.notifier).jumpToRandom(
-        words: words,
-        progress: progressMap,
-        recentIndices: recentIndices,
-      );
+      ref
+          .read(currentWordIndexProvider.notifier)
+          .jumpToRandom(
+            words: words,
+            progress: progressMap,
+            recentIndices: recentIndices,
+          );
     }
 
     void shufflePrevious() {
       final previousIndex = ref.read(shuffleHistoryProvider.notifier).pop();
       if (previousIndex != null) {
-        ref.read(currentWordIndexProvider.notifier).jumpTo(previousIndex, words.length);
+        ref
+            .read(currentWordIndexProvider.notifier)
+            .jumpTo(previousIndex, words.length);
       }
     }
 
@@ -196,8 +218,14 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(width: 1.2, color: lantern.accent.withValues(alpha: motif.railOpacity)),
-                Container(width: 1.2, color: lantern.accent.withValues(alpha: motif.railOpacity)),
+                Container(
+                  width: 1.2,
+                  color: lantern.accent.withValues(alpha: motif.railOpacity),
+                ),
+                Container(
+                  width: 1.2,
+                  color: lantern.accent.withValues(alpha: motif.railOpacity),
+                ),
               ],
             ),
           ),
@@ -222,8 +250,10 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
                 onSpeak: () => speakOrExplain(context, ref, word.japanese),
                 learned: progress.learned,
                 favorite: progress.favorite,
-                onToggleLearned: () => progressNotifier.setLearned(word, !progress.learned),
-                onToggleFavorite: () => progressNotifier.setFavorite(word, !progress.favorite),
+                onToggleLearned: () =>
+                    progressNotifier.setLearned(word, !progress.learned),
+                onToggleFavorite: () =>
+                    progressNotifier.setFavorite(word, !progress.favorite),
               ),
             ),
           ),
@@ -242,7 +272,8 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
                     word: word,
                     lantern: lantern,
                     motif: motif,
-                    onSpeak: () => speakOrExplain(context, ref, word.exampleSentence!),
+                    onSpeak: () =>
+                        speakOrExplain(context, ref, word.exampleSentence!),
                   ),
                 const SizedBox(height: 8),
                 Pager(
@@ -254,7 +285,9 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
                       : (index > 0 ? notifier.previous : null),
                   onNext: shuffleMode
                       ? () => shuffleNext()
-                      : (index < words.length - 1 ? () => notifier.next(words.length) : null),
+                      : (index < words.length - 1
+                            ? () => notifier.next(words.length)
+                            : null),
                 ),
               ],
             ),

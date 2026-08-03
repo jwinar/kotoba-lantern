@@ -12,7 +12,11 @@ class WordProgress {
   final bool learned;
   final bool favorite;
 
-  const WordProgress({this.seen = false, this.learned = false, this.favorite = false});
+  const WordProgress({
+    this.seen = false,
+    this.learned = false,
+    this.favorite = false,
+  });
 
   static const empty = WordProgress();
 

@@ -16,6 +16,10 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
+      # Formatting is enforced rather than suggested: the repo is
+      # dart-format clean as of the format-everything commit, so any
+      # deviation from here is a deliberate fight with the formatter.
+      - run: dart format --output=none --set-exit-if-changed lib test integration_test
       - run: flutter analyze
       - run: flutter test
 

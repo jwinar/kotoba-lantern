@@ -86,11 +86,17 @@ class LanternPainter extends CustomPainter {
     // Cap and base - the wooden fittings the paper is stretched between.
     final fitting = Paint()..color = light.withValues(alpha: 0.7);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(46, 8, 58, 13), const Radius.circular(3)),
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(46, 8, 58, 13),
+        const Radius.circular(3),
+      ),
       fitting,
     );
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(54, 180, 42, 12), const Radius.circular(3)),
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(54, 180, 42, 12),
+        const Radius.circular(3),
+      ),
       fitting,
     );
     // The cord it hangs from.

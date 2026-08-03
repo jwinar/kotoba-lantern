@@ -49,7 +49,8 @@ class ViewHistoryService {
   Future<void> recordView(int level, String wordId) async {
     final prefs = await _prefs();
 
-    final viewed = (prefs.getStringList(_viewedKey(level)) ?? const <String>[]).toSet();
+    final viewed = (prefs.getStringList(_viewedKey(level)) ?? const <String>[])
+        .toSet();
     if (viewed.add(wordId)) {
       await prefs.setStringList(_viewedKey(level), viewed.toList());
     }

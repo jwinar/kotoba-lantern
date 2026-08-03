@@ -100,7 +100,10 @@ int pickWeightedRandomIndex({
   int? excludeIndex,
   Random? random,
 }) {
-  assert(words.isNotEmpty, 'pickWeightedRandomIndex requires a non-empty word list');
+  assert(
+    words.isNotEmpty,
+    'pickWeightedRandomIndex requires a non-empty word list',
+  );
   if (words.length == 1) return 0;
 
   final rng = random ?? Random();
@@ -110,12 +113,14 @@ int pickWeightedRandomIndex({
 
   final weights = List<double>.generate(words.length, (i) {
     final wordProgress = progress[words[i].id];
-    final demoted = (wordProgress?.learned ?? false) && !(wordProgress?.favorite ?? false);
+    final demoted =
+        (wordProgress?.learned ?? false) && !(wordProgress?.favorite ?? false);
     var weight = demoted ? _learnedWeight : 1.0;
 
     final rank = recencyRank[i];
     if (rank != null) {
-      weight *= _recentFloor + (1 - _recentFloor) * (rank / recentIndices.length);
+      weight *=
+          _recentFloor + (1 - _recentFloor) * (rank / recentIndices.length);
     }
 
     if (i == excludeIndex) weight *= _excludeWeight;
