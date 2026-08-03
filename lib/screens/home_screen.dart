@@ -128,7 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         bottom: false,
         child: wordsAsync.when(
           loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
-          error: (err, stack) => Center(child: Text('Failed to load words: $err')),
+          error: (err, stack) => DeckLoadFailure(lantern: lantern, error: err),
           data: (words) => FutureBuilder<ViewHistorySnapshot>(
             future: _historyFuture,
             builder: (context, snapshot) {
@@ -664,6 +664,58 @@ class _LevelSelector extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+
+/// Shown when a level's asset can't be read. This is a bundled file, so it
+/// failing means a broken install rather than anything the user did or a
+/// network they can fix - the message says so instead of showing a stack
+/// trace, and the retry is there because Riverpod can genuinely recover if
+/// the read was transient.
+class DeckLoadFailure extends ConsumerWidget {
+  final LanternColors lantern;
+  final Object error;
+
+  const DeckLoadFailure({super.key, required this.lantern, required this.error});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, color: lantern.accent, size: 36),
+            const SizedBox(height: 14),
+            Text(
+              "This level's word list couldn't be opened.",
+              textAlign: TextAlign.center,
+              style: displayFont(fontSize: 19, color: lantern.ink),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'The decks ship inside the app, so this usually means the '
+              'install is damaged. Reinstalling should fix it.',
+              textAlign: TextAlign.center,
+              style: bodyFont(fontSize: 13, color: lantern.subText),
+            ),
+            const SizedBox(height: 18),
+            OutlinedButton(
+              onPressed: () => ref.invalidate(wordsProvider),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: lantern.accent.withValues(alpha: 0.7)),
+              ),
+              child: Text(
+                'Try again',
+                style: bodyFont(fontSize: 13, fontWeight: FontWeight.w600, color: lantern.accent),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

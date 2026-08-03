@@ -5,12 +5,13 @@ import '../models/japanese_word.dart';
 import '../models/word_progress.dart';
 import '../services/progress_providers.dart';
 import '../services/shuffle_providers.dart';
-import '../services/tts_providers.dart';
+import '../services/speak.dart';
 import '../services/view_history_providers.dart';
 import '../services/word_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/lantern.dart';
 import '../widgets/word_card.dart';
+import 'home_screen.dart' show DeckLoadFailure;
 import 'settings_screen.dart';
 import 'word_list_screen.dart';
 
@@ -82,7 +83,7 @@ class WordScreen extends ConsumerWidget {
       ),
       body: wordsAsync.when(
         loading: () => Center(child: CircularProgressIndicator(color: lantern.accent)),
-        error: (err, stack) => Center(child: Text('Failed to load words: $err')),
+        error: (err, stack) => DeckLoadFailure(lantern: lantern, error: err),
         data: (words) => _WordBrowser(words: words, lantern: lantern),
       ),
     );
@@ -140,7 +141,6 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
 
     final shuffleMode = ref.watch(shuffleModeProvider);
     final shuffleHistory = ref.watch(shuffleHistoryProvider);
-    final ttsService = ref.read(ttsServiceProvider);
 
     Future<void> shuffleNext() async {
       final recentIds = await ref
@@ -219,7 +219,7 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
                 word: word,
                 lantern: lantern,
                 motif: motif,
-                onSpeak: () => ttsService.speak(word.japanese),
+                onSpeak: () => speakOrExplain(context, ref, word.japanese),
                 learned: progress.learned,
                 favorite: progress.favorite,
                 onToggleLearned: () => progressNotifier.setLearned(word, !progress.learned),
@@ -242,7 +242,7 @@ class _WordBrowserState extends ConsumerState<_WordBrowser> {
                     word: word,
                     lantern: lantern,
                     motif: motif,
-                    onSpeak: () => ttsService.speak(word.exampleSentence!),
+                    onSpeak: () => speakOrExplain(context, ref, word.exampleSentence!),
                   ),
                 const SizedBox(height: 8),
                 Pager(

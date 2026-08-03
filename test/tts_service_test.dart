@@ -8,12 +8,17 @@ void main() {
 
   const channel = MethodChannel('flutter_tts');
   final calls = <MethodCall>[];
+  var japaneseAvailable = true;
 
   setUp(() {
     calls.clear();
+    japaneseAvailable = true;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
       calls.add(call);
+      // The service asks whether Japanese exists before speaking; the real
+      // plugin answers this one with a bool.
+      if (call.method == 'isLanguageAvailable') return japaneseAvailable;
       return null;
     });
   });
@@ -28,9 +33,10 @@ void main() {
 
     await service.speak('水');
 
-    expect(calls.map((c) => c.method), ['setLanguage', 'stop', 'speak']);
-    expect(calls[0].arguments, 'ja-JP');
-    expect(calls[2].arguments, '水');
+    expect(calls.map((c) => c.method),
+        ['isLanguageAvailable', 'setLanguage', 'stop', 'speak']);
+    expect(calls[1].arguments, 'ja-JP');
+    expect(calls[3].arguments, '水');
   });
 
   test('speak does not re-set the language on subsequent calls', () async {
@@ -42,5 +48,14 @@ void main() {
 
     expect(calls.map((c) => c.method), ['stop', 'speak']);
     expect(calls[1].arguments, '山');
+  });
+
+  test('a device with no Japanese voice reports it instead of staying silent',
+      () async {
+    japaneseAvailable = false;
+    final service = TtsService(flutterTts: FlutterTts());
+
+    expect(await service.speak('水'), SpeakResult.noJapaneseVoice);
+    expect(calls.map((c) => c.method), ['isLanguageAvailable']);
   });
 }

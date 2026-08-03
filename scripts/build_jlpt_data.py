@@ -145,6 +145,61 @@ def clean_reading(reading: str) -> str:
     return reading.replace("-", "").replace(".", "").strip()
 
 
+# Verbs whose dictionary form ends in る and whose class the vowel rule
+# gets WRONG. The rule ("i/e-row kana before る means ichidan") is right for
+# the overwhelming majority; these are the common godan verbs that look
+# ichidan. Anything not listed here is classified by the rule.
+GODAN_EXCEPTIONS = {
+    "帰る", "入る", "走る", "知る", "切る", "要る", "限る", "減る", "蹴る",
+    "滑る", "握る", "練る", "喋る", "参る", "混じる", "散る", "照る", "湿る",
+    "焦る", "しゃべる", "いじる", "かじる", "ける", "しめる", "せびる",
+    "ひねる", "まじる", "よみがえる",
+}
+
+# The two verbs that conjugate by their own rules.
+IRREGULAR = {"する", "来る", "くる"}
+
+_GODAN_ENDINGS = "うくぐすつぬぶむ"
+# Kana in the i-row and e-row: る preceded by one of these means ichidan.
+_I_E_ROW = (
+    "いきしちにひみりぎじぢびぴ"  # i-row
+    "えけせてねへめれげぜでべぺ"  # e-row
+)
+
+
+def infer_part_of_speech(japanese: str, english: str) -> str | None:
+    """Classifies verbs, and only verbs.
+
+    An English gloss beginning "to " means a verb in these lists - that
+    much is safe. From there the dictionary form decides the class, and it
+    decides it *completely* for anything not ending in る: those are always
+    godan. Verbs ending in る need the vowel rule plus [GODAN_EXCEPTIONS].
+
+    Nothing else is inferred. An adjective can't be told from its gloss
+    (both i- and na-adjectives read "expensive", "quiet"), and 嫌い and
+    きれい end in い while conjugating as na-adjectives - so guessing there
+    would teach the wrong grammar to the person least able to catch it.
+    """
+    if japanese in IRREGULAR or japanese.endswith("する"):
+        return "irregular verb"
+    if not english.lower().startswith("to "):
+        return None
+    if not japanese:
+        return None
+    last = japanese[-1]
+    if last in _GODAN_ENDINGS:
+        return "godan verb"
+    if last != "る":
+        # A "to …" gloss on something that isn't a verb ending - a noun
+        # phrase, an idiom. Say nothing.
+        return None
+    if japanese in GODAN_EXCEPTIONS:
+        return "godan verb"
+    if len(japanese) >= 2 and japanese[-2] in _I_E_ROW:
+        return "ichidan verb"
+    return "godan verb"
+
+
 def load_curated() -> dict:
     if not os.path.exists(CURATED):
         return {}
@@ -185,12 +240,14 @@ def build_level(level: int, curated: dict, offline: bool, already: set) -> list:
                 "level": level,
                 "order": len(words) + 1,
             }
-            # Word class is only trustworthy where a human wrote it. The
-            # source lists carry none, and guessing "godan verb" from a
-            # gloss that starts with "to " would be wrong often enough to
-            # mislead - the card simply omits the line when it's absent.
-            if entry and entry.get("partOfSpeech"):
-                record["partOfSpeech"] = entry["partOfSpeech"]
+            # Hand-written word class wins; otherwise infer one where it
+            # can be done safely (see infer_part_of_speech - verbs only).
+            # The card omits the line when neither applies.
+            part_of_speech = (entry or {}).get("partOfSpeech") or infer_part_of_speech(
+                expression, meaning
+            )
+            if part_of_speech:
+                record["partOfSpeech"] = part_of_speech
             words.append(record)
     return words
 
